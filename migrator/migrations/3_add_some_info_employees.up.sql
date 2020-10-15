@@ -1,0 +1,4 @@
+INSERT INTO employees (name, secondName, surname, photoUrl, hireDate, position, company_id) VALUES ('Jack','Blue', 'somesrname', 'someURL1', '2020-06-21 17:17:25'::timestamp, 'developer', '1');
+INSERT INTO employees (name, secondName, surname, photoUrl, hireDate, position, company_id) VALUES ('Bob','Black', 'somesrname', 'someURL2', '2020-07-21 17:17:25'::timestamp, 'developer', '2');
+INSERT INTO employees (name, secondName, surname, photoUrl, hireDate, position, company_id) VALUES ('Tom','Green', 'somesrname', 'someURL3', '2020-08-21 17:17:25'::timestamp, 'manager', '2');
+INSERT INTO employees (name, secondName, surname, photoUrl, hireDate, position, company_id) VALUES ('Ron','White', 'somesrname', 'someURL4', '2020-09-21 17:17:25'::timestamp, 'business analyst', '3');
