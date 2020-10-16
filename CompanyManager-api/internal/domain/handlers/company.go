@@ -51,7 +51,7 @@ func GetCompany() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 
 		var company presenter.Company
-		producers.KafkaSendId(mux.Vars(r)["id"], "getCompany", 0)
+		producers.KafkaSendId(mux.Vars(r)["companyId"], "getCompany", 0)
 		msg := consumers.KafkaGetStruct("sendCompany")
 		company = domain.JsonToCompany(msg)
 		json.NewEncoder(w).Encode(company)

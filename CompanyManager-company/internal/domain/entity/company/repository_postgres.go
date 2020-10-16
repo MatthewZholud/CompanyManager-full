@@ -29,8 +29,7 @@ func (s *postgresRepo) GetCompany(id int64) (*Company, error) {
 			return nil, err
 		}
 	}
-	companyProto := ToProtoCompany(company)
-	return &companyProto, nil
+	return &company, nil
 }
 
 //CreateOrder CreateOrder

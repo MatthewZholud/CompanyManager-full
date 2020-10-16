@@ -19,6 +19,8 @@ func main() {
 	r := mux.NewRouter()
 
 	routes.RegisterEmployeeRoutes(r)
+	routes.RegisterCompanyRoutes(r)
+
 
 	//routes.RegisterCompanyRoutes(r)
 	log.Fatal(http.ListenAndServe(apiGatewayPort, r))
