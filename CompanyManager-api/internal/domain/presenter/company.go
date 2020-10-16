@@ -1,10 +1,10 @@
 package presenter
 
-import (
-	"github.com/google/uuid"
-)
-
-type ID = uuid.UUID
+//import (
+//	"github.com/google/uuid"
+//)
+//
+//type ID = uuid.UUID
 
 type Company struct {
 	ID        int64     `json:"id"`

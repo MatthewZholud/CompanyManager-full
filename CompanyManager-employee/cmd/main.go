@@ -10,15 +10,9 @@ import (
 
 	//"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/domain/kafka/producers"
 
-
 	"os"
 
-
 	_ "github.com/lib/pq"
-)
-
-const (
-	employeeServicePort = ":3443"
 )
 
 func main() {
@@ -41,20 +35,28 @@ func main() {
 	conn := employee.NewPostgresRepository(db)
 
 	//consumers.ExampleConsumerGroupParallelReaders()
-	for  {
-		getEmployee := consumers.GetFromApiEmployee()
+	//topics := []string{"getCompany", "getEmployee"}
 
-		id, _ := strconv.Atoi(getEmployee)
+	msg1 := make(chan string)
+	msg2 := make(chan string)
 
-		id64 := int64(id)
+	go consumers.GetFromApiEmployee("getEmployee", msg1)
+	go consumers.GetFromApiEmployee("getCompany", msg2)
 
-		empl, _ := conn.GetEmployee(id64)
+	for {
+		select {
+		case message := <-msg2:
+			fmt.Println("main", message)
 
-		producers.SendFromApiEmployee(empl)
+		case message := <-msg1:
+			id, err := strconv.Atoi(message)
+			if err != nil {
+				panic(err)
+			}
+			id64 := int64(id)
+			empl, _ := conn.GetEmployee(id64)
+			producers.SendFromApiEmployee(empl)
+		}
 	}
-
-
-
-
 
 }

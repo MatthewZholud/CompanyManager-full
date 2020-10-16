@@ -1,5 +1,16 @@
 package handlers
 
+import (
+	"encoding/json"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/domain"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/domain/kafka/producers"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/domain/kafka/consumers"
+
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/domain/presenter"
+	"github.com/gorilla/mux"
+	"net/http"
+)
+
 //import (
 //	"context"
 //	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/domain/presenter"
@@ -34,37 +45,18 @@ package handlers
 //	}
 //}
 
-//func GetCompany() http.HandlerFunc {
-//	return func(w http.ResponseWriter, r *http.Request) {
-//		w.Header().Set("Content-Type", "application/json")
-//
-//		if IsNumericAndPositive(mux.Vars(r)["companyId"]) != true {
-//			w.WriteHeader(http.StatusBadRequest)
-//			return
-//		}
-//
-//		id, err := strconv.Atoi(mux.Vars(r)["companyId"])
-//		if err != nil {
-//			respondWithError(w, http.StatusBadRequest, "Invalid ID supplied")
-//			return
-//		}
-//
-//		id64 := int64(id)
-//
-//
-//		incomingCompany, err := c.GetCompany(context.Background(), &presenter.Id{Id: id64})
-//		if err != nil {
-//			respondWithError(w, http.StatusNotFound, "Employee not found")
-//			return
-//		}
-//
-//		Respond(w, presenter.Company{
-//			ID:        incomingCompany.Id,
-//			Name:      incomingCompany.Name,
-//			Legalform: incomingCompany.Legalform,
-//		})
-//	}
-//}
+
+func GetCompany() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		var company presenter.Company
+		producers.KafkaSendId(mux.Vars(r)["id"], "getCompany", 0)
+		msg := consumers.KafkaGetStruct("sendCompany")
+		company = domain.JsonToCompany(msg)
+		json.NewEncoder(w).Encode(company)
+	}
+}
 
 //func DeleteCompany() http.HandlerFunc {
 //	return func(w http.ResponseWriter, r *http.Request) {

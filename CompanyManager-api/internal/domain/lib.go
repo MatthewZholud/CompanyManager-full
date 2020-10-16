@@ -2,6 +2,7 @@ package domain
 
 import (
 	"encoding/json"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/domain/presenter"
 	"log"
 	"net/http"
 	"strconv"
@@ -48,6 +49,21 @@ func Respond(w http.ResponseWriter, i interface{}) {
 	json.NewEncoder(w).Encode(i)
 	//w.WriteHeader(http.StatusOK)
 }
+
+
+func JsonToEmployee(msg []byte) presenter.Employee {
+	employee := presenter.Employee{}
+	json.Unmarshal(msg, &employee)
+	return employee
+}
+
+func JsonToCompany(msg []byte) presenter.Company {
+	company := presenter.Company{}
+	json.Unmarshal(msg, &company)
+	return company
+}
+
+
 
 
 

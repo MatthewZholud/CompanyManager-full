@@ -17,16 +17,15 @@ func getKafkaReader(kafkaURL, topic string) *kafka.Reader {
 	})
 }
 
-func GetFromApiEmployee() string {
-	// get kafka reader using environment variables.
-	kafkaURL := "kafka:9092"
-	topic := "getEmployee"
+func GetFromApiEmployee(topic string, ch chan string) string {
+	fmt.Println("hi my topic is", topic)
 
-	reader := getKafkaReader(kafkaURL, topic)
+	reader := getKafkaReader("kafka:9092", topic)
 	reader.SetOffset(kafka.LastOffset)
 	//defer reader.Close()
 
-	fmt.Println("start consuming getEmployee ... !!")
+	fmt.Println("start consuming", topic ,"... !!")
+
 	for {
 		m, err := reader.ReadMessage(context.Background())
 		if err != nil {
@@ -34,7 +33,9 @@ func GetFromApiEmployee() string {
 		}
 		fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
 
-		fmt.Println(string(m.Value))
-		return string(m.Value)
+		if m.Value != nil{
+			ch <- string(m.Value)
+		}
 	}
+	return ""
 }

@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
+	//"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/domain/presenter"
+
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/domain"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/domain/kafka/consumers"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/domain/kafka/producers"
-
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/domain/presenter"
 
-	//"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/domain/presenter"
 	"github.com/gorilla/mux"
 
 	"net/http"
@@ -49,7 +50,8 @@ func GetEmployee() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		var employee presenter.Employee
 		producers.KafkaSendId(mux.Vars(r)["id"], "getEmployee", 0)
-		employee = consumers.KafkaGetStruct("sendEmployee")
+		msg := consumers.KafkaGetStruct("sendEmployee")
+		employee = domain.JsonToEmployee(msg)
 		json.NewEncoder(w).Encode(employee)
 	}
 }
