@@ -6,8 +6,7 @@ import (
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/domain/entity/employee"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/domain/kafka/consumers"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/domain/kafka/producers"
-	"strconv"
-
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/domain/usecase"
 	//"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/domain/kafka/producers"
 
 	"os"
@@ -20,7 +19,7 @@ func main() {
 		os.Getenv("POSTGRES_HOST"), os.Getenv("POSTGRES_PORT"), os.Getenv("POSTGRES_USER"),
 		os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"))
 	//PsqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-	//	"postgresdb", "5432", "postgres", "mypassword", "time_tracker")
+	//	"postgresdb", "5432", "postgres", "mypassword", "company_manager")
 
 	db, err := sql.Open("postgres", PsqlInfo)
 	if err != nil {
@@ -49,12 +48,11 @@ func main() {
 			fmt.Println("main", message)
 
 		case message := <-msg1:
-			id, err := strconv.Atoi(message)
+			id := usecase.MessageService(message)
+			empl, err := conn.GetEmployee(id)
 			if err != nil {
 				panic(err)
 			}
-			id64 := int64(id)
-			empl, _ := conn.GetEmployee(id64)
 			producers.SendFromApiEmployee(empl)
 		}
 	}

@@ -4,11 +4,21 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/segmentio/kafka-go"
-	"log"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/domain/entity/employee"
-
+	"github.com/segmentio/kafka-go"
+	"strings"
+	"time"
 )
+
+func getKafkaWriter(kafkaURL, topic string) *kafka.Writer {
+	brokers := strings.Split(kafkaURL, ",")
+	return kafka.NewWriter(kafka.WriterConfig{
+		Brokers:  brokers,
+		Topic:    topic,
+		Balancer: &kafka.LeastBytes{},
+		BatchTimeout: 1 * time.Millisecond,
+	})
+}
 
 func SendFromApiEmployee(employee *employee.Employee){
 	// get kafka reader using environment variables.
@@ -17,24 +27,13 @@ func SendFromApiEmployee(employee *employee.Employee){
 		fmt.Println(err)
 		return
 	}
-
 	topic := "sendEmployee"
-	partition := 0
 
-	conn, err := kafka.DialLeader(context.Background(), "tcp", "kafka:9092", topic, partition)
-	if err != nil {
-		log.Fatal("failed to dial leader:", err)
-	}
+	writer := getKafkaWriter("kafka:9092", topic)
+	defer writer.Close()
 
-	_, err = conn.WriteMessages(
-		kafka.Message{Value: []byte(e)},
+	writer.WriteMessages(context.Background(),
+		kafka.Message{
+			Value: []byte(e) })
 
-	)
-	if err != nil {
-		log.Fatal("failed to write messages:", err)
-	}
-
-	//if err := conn.Close(); err != nil {
-	//	log.Fatal("failed to close writer:", err)
-	//}
 }

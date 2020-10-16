@@ -3,22 +3,25 @@ package producers
 import (
 	"context"
 	"github.com/segmentio/kafka-go"
-	"log"
+	"strings"
+	"time"
 )
 
-func KafkaSendId(id, topic string, partition int) {
-	conn, err := kafka.DialLeader(context.Background(), "tcp", "kafka:9092", topic, partition)
+func getKafkaWriter(kafkaURL, topic string) *kafka.Writer {
+	brokers := strings.Split(kafkaURL, ",")
+	return kafka.NewWriter(kafka.WriterConfig{
+		Brokers:  brokers,
+		Topic:    topic,
+		Balancer: &kafka.LeastBytes{},
+		BatchTimeout: 1 * time.Millisecond,
+	})
+}
 
-	if err != nil {
-		log.Fatal("failed to dial leader:", err)
-	}
-	_, err = conn.WriteMessages(
-		kafka.Message{Value: []byte(id)},
-	)
-	if err != nil {
-		log.Fatal("failed to write messages:", err)
-	}
-	//if err := conn.Close(); err != nil {
-	//	log.Fatal("failed to close writer:", err)
-	//}
+func KafkaSendId(id, topic string, partition int) {
+	writer := getKafkaWriter("kafka:9092", topic)
+	defer writer.Close()
+
+	writer.WriteMessages(context.Background(),
+			kafka.Message{
+				Value: []byte(id) })
 }
