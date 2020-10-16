@@ -1,6 +1,8 @@
 package employee
 
-import "database/sql"
+import (
+	"database/sql"
+)
 
 type postgresRepo struct {
 	db *sql.DB
@@ -13,24 +15,24 @@ func NewPostgresRepository(db *sql.DB) *postgresRepo {
 	}
 }
 
-//func (s *postgresRepo) GetEmployee(id int64) (*Employee, error) {
-//	var employee Employee
-//	rows, err := s.db.Query("SELECT * from employees WHERE employee_id = $1", id)
-//	if err != nil {
-//		return nil, err
-//	}
-//	defer rows.Close()
-//	for rows.Next() {
-//		if err := rows.Scan(&employee.ID, &employee.Name, &employee.SecondName, &employee.Surname,
-//			&employee.PhotoUrl, &employee.HireDate, &employee.Position, &employee.CompanyID);
-//			err != nil {
-//			return nil, err
-//		}
-//	}
-//
-//	employeeProto := ToProtoEmployee(employee)
-//	return &employeeProto, nil
-//}
+func (s *postgresRepo) GetEmployee(id int64) (*Employee, error) {
+	var employee Employee
+
+	rows, err1 := s.db.Query("SELECT * from employees WHERE employee_id = $1", id)
+	if err1 != nil {
+		return nil, err1
+	}
+	defer rows.Close()
+	for rows.Next() {
+		if err := rows.Scan(&employee.ID, &employee.Name, &employee.SecondName, &employee.Surname,
+			&employee.PhotoUrl, &employee.HireDate, &employee.Position, &employee.CompanyID);
+			err != nil {
+			return nil, err
+		}
+	}
+
+	return &employee, nil
+}
 
 //func (s *postgresRepo) CreateEmployee(e *Employee) (ID, error) {
 //	var empId int64

@@ -7,7 +7,7 @@ import (
 type ID = uuid.UUID
 
 type Company struct {
-	ID        ID     `json:"id"`
+	ID        int64     `json:"id"`
 	Name      string `json:"name"`
 	Legalform string `json:"legal_form"`
 }

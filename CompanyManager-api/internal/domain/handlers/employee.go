@@ -1,12 +1,16 @@
 package handlers
 
 import (
-	"context"
+	"encoding/json"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/domain/kafka/consumers"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/domain/kafka/producers"
+
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/domain/presenter"
+
 	//"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/domain/presenter"
 	"github.com/gorilla/mux"
-	"log"
+
 	"net/http"
-	kafka "github.com/segmentio/kafka-go"
 )
 
 //func CreateEmployee() http.HandlerFunc {
@@ -43,46 +47,10 @@ import (
 func GetEmployee() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		id := mux.Vars(r)["id"]
-
-
-		topic := "my-topic"
-		partition := 0
-
-		conn, err := kafka.DialLeader(context.Background(), "tcp", "kafka:9092", topic, partition)
-		if err != nil {
-			log.Fatal("failed to dial leader:", err)
-		}
-
-		_, err = conn.WriteMessages(
-			kafka.Message{Value: []byte(id)},
-
-		)
-		if err != nil {
-			log.Fatal("failed to write messages:", err)
-		}
-
-		if err := conn.Close(); err != nil {
-			log.Fatal("failed to close writer:", err)
-		}
-		//incomingEmployee, err := e.GetEmployee(context.Background(), &employee.Id{Id: id64})
-		//if err != nil {
-		//	respondWithError(w, http.StatusNotFound, "Employee not found")
-		//	return
-		//}
-		//
-		//Respond(w, presenter.Employee{
-		//	ID:         incomingEmployee.Id,
-		//	Name:       incomingEmployee.Name,
-		//	SecondName: incomingEmployee.SecondName,
-		//	Surname:    incomingEmployee.Surname,
-		//	PhotoUrl:   incomingEmployee.PhotoUrl,
-		//	HireDate:   incomingEmployee.HireDate,
-		//	Position:   incomingEmployee.Position,
-		//	CompanyID:  incomingEmployee.CompanyId,
-		//})
-
-
+		var employee presenter.Employee
+		producers.KafkaSendId(mux.Vars(r)["id"], "getEmployee", 0)
+		employee = consumers.KafkaGetStruct("sendEmployee")
+		json.NewEncoder(w).Encode(employee)
 	}
 }
 
