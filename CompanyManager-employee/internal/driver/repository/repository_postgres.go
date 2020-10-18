@@ -9,7 +9,6 @@ type postgresRepo struct {
 	db *sql.DB
 }
 
-//NewMySQLRepository create new repository
 func NewPostgresRepository(db *sql.DB) *postgresRepo {
 	return &postgresRepo{
 		db: db,
@@ -44,35 +43,23 @@ func (s *postgresRepo) Create(e *employee.Employee) (string, error) {
 	}
 	return empId, nil
 }
-//
-//func (s *postgresRepo) DeleteEmployee(ctx context.Context, in *Id) (*EmployeeReply, error) {
-//	_, err := s.db.Exec("DELETE FROM employees WHERE employee_id = $1", in.Id)
-//	if err != nil {
-//		return nil, err
-//	}
-//	employeeReply := EmployeeReply{Message: "Successful delete"}
-//	return &employeeReply, nil
-//}
-//
-//func (s *postgresRepo) UpdateEmployee(ctx context.Context, in *EmployeeProto) (*EmployeeReply, error) {
-//	_, err := s.db.Exec("UPDATE employees set name = $1, secondName = $2, surname = $3, photoUrl = $4, hireDate = $5,"+
-//		" position = $6, company_id = $7 where employee_id = $7;", in.Name, in.SecondName, in.Surname,
-//		in.PhotoUrl, in.HireDate, in.Position, in.CompanyId, in.Id)
-//	if err != nil {
-//		return nil, err
-//	}
-//	employeeReply := EmployeeReply{Message: "Successful update"}
-//	return &employeeReply, nil
-//}
-//
-//func (s *postgresRepo) FormUpdateEmployee(ctx context.Context, in *EmployeeProto) (*EmployeeReply, error) {
-//	_, err := s.db.Exec("UPDATE employees set name = $1, secondName = $2, surname = $3, photoUrl = $4, hireDate = $5,"+
-//		" position = $6, company_id = $7 where employee_id = $7;", in.Name, in.SecondName, in.Surname,
-//		in.PhotoUrl, in.HireDate, in.Position, in.CompanyId, in.Id)
-//	if err != nil {
-//		return nil, err
-//	}
-//	employeeReply := EmployeeReply{Message: "Successful update"}
-//
-//	return &employeeReply, nil
-//}
+
+func (s *postgresRepo) Delete(id int64) (string, error) {
+	_, err := s.db.Exec("DELETE FROM employees WHERE employee_id = $1", id)
+	if err != nil {
+		return "", err
+	}
+	employeeReply := "Successful delete"
+	return employeeReply, nil
+}
+
+func (s *postgresRepo) Update(e *employee.Employee) (string, error) {
+	_, err := s.db.Exec("UPDATE employees set name = $1, secondName = $2, surname = $3, photoUrl = $4, hireDate = $5,"+
+		" position = $6, company_id = $7 where employee_id = $7;", e.Name, e.SecondName, e.Surname,
+		e.PhotoUrl, e.HireDate, e.Position, e.CompanyID, e.ID)
+	if err != nil {
+		return "", err
+	}
+	employeeReply := "Successful update"
+	return employeeReply, nil
+}

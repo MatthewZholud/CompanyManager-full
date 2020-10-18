@@ -4,15 +4,12 @@ import "github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/inte
 
 type Reader interface {
 	Get(id int64) (*company.Company, error)
-	//Search(query string) ([]*company.Company, error)
-	//List() ([]*company.Company, error)
 }
 
-//Writer book writer
 type Writer interface {
 	Create(e *company.Company) (string, error)
-	//Update(e *company.Company) error
-	//Delete(id int64) error
+	Update(e *company.Company) (string, error)
+	Delete(id int64) (string, error)
 }
 
 //repository interface
@@ -26,6 +23,6 @@ type UseCase interface {
 	//SearchBooks(query string) ([]*entity.Book, error)
 	//ListBooks() ([]*entity.Book, error)
 	CreateCompany(message []byte)
-	//UpdateBook(e *entity.Book) error
-	//DeleteBook(id entity.ID) error
+	UpdateCompany(message []byte)
+	DeleteCompany(message string)
 }

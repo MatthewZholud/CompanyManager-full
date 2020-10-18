@@ -13,15 +13,16 @@ package company
 //}
 
 type Company struct {
-	ID        int64     `json:"id"`
+	ID        int64  `json:"id"`
 	Name      string `json:"name"`
 	Legalform string `json:"legal_form"`
 }
 
-func NewCompany(name, legalForm string) *Company {
+func NewCompany(name, legalForm string, id int64) *Company {
 	comp := &Company{
-		Name:     name,
-		Legalform:    legalForm,
+		ID:        id,
+		Name:      name,
+		Legalform: legalForm,
 	}
 	return comp
 }

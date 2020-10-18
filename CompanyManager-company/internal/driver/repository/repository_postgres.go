@@ -9,7 +9,6 @@ type postgresRepo struct {
 	db *sql.DB
 }
 
-//NewMySQLRepository create new repository
 func NewPostgresRepository(db *sql.DB) *postgresRepo {
 	return &postgresRepo{
 		db: db,
@@ -43,35 +42,25 @@ func (s *postgresRepo) Create(c *company.Company) (string, error) {
 	}
 	return compId, nil
 }
-//
-//func (s *Server) DeleteCompany(ctx context.Context, in *Id) (*CompanyReply, error) {
-//	_, err := s.Database.Db.Exec("DELETE FROM company WHERE company_id = $1", in.Id)
-//	if err != nil {
-//		return nil, err
-//	}
-//	companyReply := CompanyReply{Message: "Successful deletion"}
-//	return &companyReply, nil
-//}
-//
-//func (s *Server) UpdateCompany(ctx context.Context, in *CompanyProto) (*CompanyReply, error) {
-//	_, err := s.Database.Db.Exec("UPDATE company set name = $1, legal_form = $2 where company_id = $3;", in.Name, in.Legalform, in.Id)
-//	if err != nil {
-//		return nil, err
-//	}
-//	companyReply := CompanyReply{Message: "Successful update"}
-//
-//	return &companyReply, nil
-//}
-//
-//func (s *Server) FormUpdateCompany(ctx context.Context, in *CompanyProto) (*CompanyReply, error) {
-//	_, err := s.Database.Db.Exec("UPDATE company set name = $1, legal_form = $2 where company_id = $3;", in.Name, in.Legalform, in.Id)
-//	if err != nil {
-//		return nil, err
-//	}
-//	companyReply := CompanyReply{Message: "Successful update"}
-//
-//	return &companyReply, nil
-//}
+
+func (s *postgresRepo) Delete(id int64) (string, error) {
+	_, err := s.db.Exec("DELETE FROM company WHERE company_id = $1", id)
+	if err != nil {
+		return "", err
+	}
+	companyReply :=  "Successful delete"
+	return companyReply, nil
+}
+
+func (s *postgresRepo) Update(c *company.Company) (string, error) {
+	_, err := s.db.Exec("UPDATE company set name = $1, legal_form = $2 where company_id = $3;", c.Name, c.Legalform, c.ID)
+	if err != nil {
+		return  "", err
+	}
+	companyReply := "Successful update"
+	return companyReply, nil
+}
+
 //
 //func (s *Server) GetEmployeesByCompany(ctx context.Context, in *Id) (*Employees, error) {
 //

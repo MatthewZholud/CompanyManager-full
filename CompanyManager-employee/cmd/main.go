@@ -34,14 +34,20 @@ func main() {
 	service := usecase.NewService(conn)
 
 
-	//consumers.ExampleConsumerGroupParallelReaders()
-	//topics := []string{"getCompany", "getEmployee"}
+
 
 	msg1 := make(chan []byte)
 	msg2 := make(chan []byte)
+	msg3 := make(chan []byte)
+	msg4 := make(chan []byte)
+
 
 	go consumers.KafkaConsumer("EmployeeGETRequest", msg1)
 	go consumers.KafkaConsumer("EmployeePOSTRequest", msg2)
+	go consumers.KafkaConsumer("EmployeePUTRequest", msg3)
+	go consumers.KafkaConsumer("EmployeeDeleteRequest", msg4)
+
+
 
 	for {
 		select {
@@ -49,6 +55,10 @@ func main() {
 			service.CreateEmployee(message)
 		case message := <-msg1:
 			service.GetEmployee(message)
+		case message := <-msg3:
+			service.UpdateEmployee(message)
+		case message := <-msg4:
+			service.DeleteEmployee(message)
 		}
 	}
 

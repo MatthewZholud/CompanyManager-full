@@ -5,6 +5,7 @@ import (
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/kafka/consumers"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/kafka/producers"
 	"log"
+	"strconv"
 
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/presenter"
 	"github.com/gorilla/mux"
@@ -16,7 +17,7 @@ func CreateCompany() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
-		errorMessage := "Error adding book"
+		errorMessage := "Error adding company"
 		var input struct {
 			Name      string `json:"name"`
 			Legalform string `json:"legal_form"`
@@ -57,7 +58,6 @@ func CreateCompany() http.HandlerFunc {
 func GetCompany() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-
 		var company presenter.Company
 		producers.KafkaSendId(mux.Vars(r)["companyId"], "CompanyGETRequest")
 		msg := consumers.KafkaGetStruct("CompanyGETResponse")
@@ -66,48 +66,38 @@ func GetCompany() http.HandlerFunc {
 	}
 }
 
-//func DeleteCompany() http.HandlerFunc {
-//	return func(w http.ResponseWriter, r *http.Request) {
-//		w.Header().Set("Content-Type", "application/json")
-//		if IsNumericAndPositive(mux.Vars(r)["companyId"]) != true {
-//			w.WriteHeader(http.StatusBadRequest)
-//			return
-//		}
-//		id, err := strconv.Atoi(mux.Vars(r)["companyId"])
-//		if err != nil {
-//			respondWithError(w, http.StatusBadRequest, "Invalid ID supplied")
-//			return
-//		}
-//
-//		id64 := int64(id)
-//
-//		_, err = c.DeleteCompany(context.Background(), &presenter.Id{Id: id64})
-//
-//		if err != nil {
-//			respondWithError(w, http.StatusNotFound, "Company not found")
-//			return
-//		}
-//
-//	}
-//}
-//
+func DeleteCompany() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		errorMessage := "Error deleting company"
+		producers.KafkaSendId(mux.Vars(r)["companyId"], "CompanyDeleteRequest")
+		msg := consumers.KafkaGetStruct("CompanyDeleteResponse")
+		if string(msg) != "Successful delete" {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(errorMessage))
+			return
+		}
+
+	}
+}
+
 func UpdateCompany() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		errorMessage := "Error adding book"
-		var input struct {
+		errorMessage := "Error updating company"
+		var update struct {
 			Name      string `json:"name"`
 			Legalform string `json:"legal_form"`
 		}
 
-		err := json.NewDecoder(r.Body).Decode(&input)
+		err := json.NewDecoder(r.Body).Decode(&update)
 		if err != nil {
 			log.Println(err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(errorMessage))
 			return
 		}
-		comp, err := json.Marshal(input)
+		comp, err := json.Marshal(update)
 		if err != nil {
 			log.Println(err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
@@ -116,52 +106,50 @@ func UpdateCompany() http.HandlerFunc {
 		}
 		producers.KafkaSendStruct(comp, "CompanyPUTRequest")
 		msg := consumers.KafkaGetStruct("CompanyPUTResponse")
-		id := ByteToInt64(msg)
-		toJ := &presenter.Company{
-			ID:        id,
-			Name:      input.Name,
-			Legalform: input.Legalform,
-		}
-
-		if err := json.NewEncoder(w).Encode(toJ); err != nil {
+		if string(msg) != "Successful update" {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(errorMessage))
 			return
 		}
 	}
 }
-//
-//func FormUpdateCompany() http.HandlerFunc {
-//
-//	return func(w http.ResponseWriter, r *http.Request) {
-//		w.Header().Set("Content-Type", "application/json")
-//		var comp presenter.Company
-//
-//		id, err := strconv.Atoi(mux.Vars(r)["companyId"])
-//		if err != nil {
-//			respondWithError(w, http.StatusMethodNotAllowed, "Invalid input")
-//			return
-//		}
-//
-//		id64 := int64(id)
-//
-//		err = parseJsonToStruct(w, r, &comp)
-//		if err != nil {
-//			return
-//		}
-//
-//		companyProtocol := &presenter.Company{
-//			ID:        id64,
-//			Name:      comp.Name,
-//			Legalform: comp.Legalform,
-//		}
-//		_, err = c.FormUpdateCompany(r.Context(), companyProtocol)
-//		if err != nil {
-//			respondWithError(w, http.StatusMethodNotAllowed, "Invalid input")
-//			return
-//		}
-//	}
-//}
+
+func FormUpdateCompany() http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		errorMessage := "Error updating company"
+
+		id, err := strconv.Atoi(mux.Vars(r)["companyId"])
+		if err != nil {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			w.Write([]byte(errorMessage))
+			return
+		}
+
+		update := presenter.Company{
+			ID:        int64(id),
+			Name:      r.Form.Get("name"),
+			Legalform: r.Form.Get("legal_form"),
+		}
+
+		comp, err := json.Marshal(update)
+		if err != nil {
+			log.Println(err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(errorMessage))
+			return
+		}
+		producers.KafkaSendStruct(comp, "CompanyPUTRequest")
+		msg := consumers.KafkaGetStruct("CompanyPUTResponse")
+		if string(msg) != "Successful update" {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(errorMessage))
+			return
+		}
+	}
+}
+
 //
 //func GetEmployeesByCompany() http.HandlerFunc {
 //

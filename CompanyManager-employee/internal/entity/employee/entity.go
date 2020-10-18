@@ -23,8 +23,9 @@ type Employee struct {
 }
 
 
-func NewEmployee(name, secondName, surname, photoURL, hireDate, position string, companyID int64) *Employee {
+func NewEmployee(name, secondName, surname, photoURL, hireDate, position string, id, companyID int64) *Employee {
 	empl := &Employee{
+		ID: id,
 		Name:     name,
 		SecondName:    secondName,
 		Surname:     surname,

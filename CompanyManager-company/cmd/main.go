@@ -12,9 +12,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const (
-	companyServiceAddr = ":4443"
-)
 
 func main() {
 
@@ -32,14 +29,16 @@ func main() {
 	conn := repository.NewPostgresRepository(db)
 	service := usecase.NewService(conn)
 
-
-
 	msg1 := make(chan []byte)
 	msg2 := make(chan []byte)
+	msg3 := make(chan []byte)
+	msg4 := make(chan []byte)
+	//msg5 := make(chan []byte)
 
 	go consumers.KafkaConsumer("CompanyGETRequest", msg1)
 	go consumers.KafkaConsumer("CompanyPOSTRequest", msg2)
-
+	go consumers.KafkaConsumer("CompanyPUTRequest", msg3)
+	go consumers.KafkaConsumer("CompanyDeleteRequest", msg4)
 
 	for {
 		select {
@@ -47,7 +46,10 @@ func main() {
 			service.CreateCompany(message)
 		case message := <-msg1:
 			service.GetCompany(message)
+		case message := <-msg3:
+			service.UpdateCompany(message)
+		case message := <-msg4:
+			service.DeleteCompany(message)
 		}
 	}
-
 }

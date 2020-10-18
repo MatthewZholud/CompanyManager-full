@@ -16,7 +16,7 @@ func  StringToInt64(message string) int64 {
 	return int64(id)
 }
 
-func JsonToEmployee(msg []byte) company.Company {
+func JsonToCompany(msg []byte) company.Company {
 	employee := company.Company{}
 	json.Unmarshal(msg, &employee)
 	return employee

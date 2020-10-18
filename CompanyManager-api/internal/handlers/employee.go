@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"log"
+	"strconv"
 
 	//"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/domain/presenter"
 
@@ -19,7 +20,7 @@ func CreateEmployee() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
-		errorMessage := "Error adding book"
+		errorMessage := "Error adding employee"
 		var input struct {
 			Name       string `json:"name"`
 			SecondName string `json:"second_name"`
@@ -78,24 +79,19 @@ func GetEmployee() http.HandlerFunc {
 	}
 }
 
-//func DeleteEmployee() http.HandlerFunc {
-//	return func(w http.ResponseWriter, r *http.Request) {
-//		w.Header().Set("Content-Type", "application/json")
-//		id, err := strconv.Atoi(mux.Vars(r)["id"])
-//		if err != nil {
-//			respondWithError(w, http.StatusBadRequest, "Invalid ID supplied")
-//			return
-//		}
-//		id64 := int64(id)
-//
-//		_, err = e.DeleteEmployee(context.Background(), &employee.Id{Id: id64})
-//		if err != nil {
-//			respondWithError(w, http.StatusNotFound, "Company not found")
-//			return
-//		}
-//	}
-//}
-//
+func DeleteEmployee() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		errorMessage := "Error deleting employee"
+		producers.KafkaSendId(mux.Vars(r)["id"], "EmployeeDeleteRequest")
+		msg := consumers.KafkaGetStruct("EmployeeDeleteResponse")
+		if string(msg) != "Successful delete" {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(errorMessage))
+			return
+		}
+	}
+}
 
 
 func UpdateEmployee() http.HandlerFunc {
@@ -103,8 +99,7 @@ func UpdateEmployee() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
-
-		errorMessage := "Error updating book"
+		errorMessage := "Error updating employee"
 		var update struct {
 			Name       string `json:"name"`
 			SecondName string `json:"second_name"`
@@ -131,58 +126,56 @@ func UpdateEmployee() http.HandlerFunc {
 		}
 		producers.KafkaSendStruct(empl, "EmployeePUTRequest")
 		msg := consumers.KafkaGetStruct("EmployeePUTResponse")
-		id := ByteToInt64(msg)
-		toJ := &presenter.Employee{
-			ID:         id,
-			Name:       update.Name,
-			SecondName: update.SecondName,
-			Surname:    update.Surname,
-			PhotoUrl:   update.PhotoUrl,
-			HireDate:   update.HireDate,
-			Position:   update.Position,
-			CompanyID:  update.CompanyID,
-		}
-
-		if err := json.NewEncoder(w).Encode(toJ); err != nil {
+		if string(msg) != "Successful update" {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(errorMessage))
 			return
 		}
 	}
 }
-//
-//func FormUpdateEmployee() http.HandlerFunc {
-//
-//	return func(w http.ResponseWriter, r *http.Request) {
-//		w.Header().Set("Content-Type", "application/json")
-//		var empl employee.Employee
-//
-//		id, err := strconv.Atoi(mux.Vars(r)["id"])
-//		if err != nil {
-//			respondWithError(w, http.StatusMethodNotAllowed, "Invalid input")
-//			return
-//		}
-//		id64 := int64(id)
-//
-//		err = parseJsonToStruct(w, r, &empl)
-//		if err != nil {
-//			return
-//		}
-//
-//		employeeProtocol := &employee.EmployeeProto{
-//			Id:         id64,
-//			Name:       empl.Name,
-//			SecondName: empl.SecondName,
-//			Surname:    empl.Surname,
-//			PhotoUrl:   empl.PhotoUrl,
-//			HireDate:   empl.HireDate,
-//			Position:   empl.Position,
-//			CompanyId:  empl.CompanyID,
-//		}
-//		_, err = e.FormUpdateEmployee(r.Context(), employeeProtocol)
-//		if err != nil {
-//			respondWithError(w, http.StatusMethodNotAllowed, "Invalid input")
-//			return
-//		}
-//	}
-//}
+
+func FormUpdateEmployee() http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		errorMessage := "Error updating employee"
+
+		id, err := strconv.Atoi(mux.Vars(r)["id"])
+		if err != nil {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			w.Write([]byte(errorMessage))
+			return
+		}
+		companyID, err := strconv.Atoi(r.Form.Get("company_id"))
+		if err != nil {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			w.Write([]byte(errorMessage))
+			return
+		}
+
+		update := &presenter.Employee{
+			ID:         int64(id),
+			Name:       r.Form.Get("name"),
+			SecondName: r.Form.Get("second_name"),
+			Surname:    r.Form.Get("surname"),
+			PhotoUrl:   r.Form.Get("photo_url"),
+			HireDate:   r.Form.Get("hire_date"),
+			Position:   r.Form.Get("position"),
+			CompanyID:  int64(companyID),
+		}
+		empl, err := json.Marshal(update)
+		if err != nil {
+			log.Println(err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(errorMessage))
+			return
+		}
+		producers.KafkaSendStruct(empl, "EmployeePUTRequest")
+		msg := consumers.KafkaGetStruct("EmployeePUTResponse")
+		if string(msg) != "Successful update" {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(errorMessage))
+			return
+		}
+	}
+}
