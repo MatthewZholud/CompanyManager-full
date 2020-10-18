@@ -1,10 +1,6 @@
 package kafka
 
 type Exchanger interface {
-	KafkaSendId(id, topic string, partition int)
+	KafkaSend(str []byte, topic string)
 	KafkaGetStruct(topic string) []byte
-}
-
-type KafkaExchange struct {
-	Exchange Exchanger
 }

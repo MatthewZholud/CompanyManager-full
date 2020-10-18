@@ -20,7 +20,7 @@ func NewService(r Repository) *Service {
 func (s *Service) GetEmployee(message []byte) {
 	id := StringToInt64(string(message))
 	employee, err := s.repo.Get(id)
-	if err != nil {
+	if employee == nil {
 		log.Fatal(entity.ErrNotFound)
 	}
 	if err != nil {
@@ -63,3 +63,18 @@ func (s *Service) DeleteEmployee(message []byte) {
 	producers.KafkaSend([]byte(response), "EmployeeGETResponse")
 }
 
+func (s *Service) GetEmployeeByCompany(message []byte) {
+	id := StringToInt64(string(message))
+	employees, err := s.repo.GetEmployeesByCompany(id)
+	if employees == nil {
+		log.Fatal(entity.ErrNotFound)
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+	e, err := json.Marshal(employees)
+	if err != nil {
+		log.Fatal(err)
+	}
+	producers.KafkaSend(e, "EmployeeByCompanyGETResponse")
+}

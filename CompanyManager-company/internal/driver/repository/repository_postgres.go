@@ -61,25 +61,3 @@ func (s *postgresRepo) Update(c *company.Company) (string, error) {
 	return companyReply, nil
 }
 
-//
-//func (s *Server) GetEmployeesByCompany(ctx context.Context, in *Id) (*Employees, error) {
-//
-//	rows, err := s.Database.Db.Query("SELECT * from employees WHERE company_id = $1", in.Id)
-//	if err != nil {
-//		return nil, err
-//	}
-//	defer rows.Close()
-//	employees := []employee.Employee{}
-//
-//	for rows.Next() {
-//		employee := employee.Employee{}
-//
-//		if err := rows.Scan(&employee.ID, &employee.Name, &employee.SecondName, &employee.Surname,
-//			&employee.PhotoUrl, &employee.HireDate, &employee.Position, &employee.CompanyID); err != nil {
-//			return nil, err
-//		}
-//		employees = append(employees, employee)
-//	}
-//	employeesProto := ToMultipleProtoEmployee(employees)
-//	return &employeesProto, nil
-//}

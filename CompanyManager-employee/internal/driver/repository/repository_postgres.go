@@ -63,3 +63,24 @@ func (s *postgresRepo) Update(e *employee.Employee) (string, error) {
 	employeeReply := "Successful update"
 	return employeeReply, nil
 }
+
+func (s *postgresRepo) GetEmployeesByCompany(id int64) (*[]employee.Employee, error) {
+
+	rows, err := s.db.Query("SELECT * from employees WHERE company_id = $1", id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	employees := []employee.Employee{}
+
+	for rows.Next() {
+		employee := employee.Employee{}
+
+		if err := rows.Scan(&employee.ID, &employee.Name, &employee.SecondName, &employee.Surname,
+			&employee.PhotoUrl, &employee.HireDate, &employee.Position, &employee.CompanyID); err != nil {
+			return nil, err
+		}
+		employees = append(employees, employee)
+	}
+	return &employees, nil
+}

@@ -45,7 +45,7 @@ func CreateEmployee() http.HandlerFunc {
 			w.Write([]byte(errorMessage))
 			return
 		}
-		producers.KafkaSendStruct(empl, "EmployeePOSTRequest")
+		producers.KafkaSend(empl, "EmployeePOSTRequest")
 		msg := consumers.KafkaGetStruct("EmployeePOSTResponse")
 		id := ByteToInt64(msg)
 		toJ := &presenter.Employee{
@@ -71,10 +71,17 @@ func CreateEmployee() http.HandlerFunc {
 func GetEmployee() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		var employee presenter.Employee
-		producers.KafkaSendId(mux.Vars(r)["id"], "EmployeeGETRequest")
+		errorMessage := "Error reading employees"
+		var employee *presenter.Employee
+		producers.KafkaSend([]byte(mux.Vars(r)["id"]), "EmployeeGETRequest")
 		msg := consumers.KafkaGetStruct("EmployeeGETResponse")
-		employee = JsonToEmployee(msg)
+		employee, err := JsonToEmployee(msg)
+		if err != nil {
+			log.Println(err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(errorMessage))
+			return
+		}
 		json.NewEncoder(w).Encode(employee)
 	}
 }
@@ -83,7 +90,7 @@ func DeleteEmployee() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		errorMessage := "Error deleting employee"
-		producers.KafkaSendId(mux.Vars(r)["id"], "EmployeeDeleteRequest")
+		producers.KafkaSend([]byte(mux.Vars(r)["id"]), "EmployeeDeleteRequest")
 		msg := consumers.KafkaGetStruct("EmployeeDeleteResponse")
 		if string(msg) != "Successful delete" {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -92,7 +99,6 @@ func DeleteEmployee() http.HandlerFunc {
 		}
 	}
 }
-
 
 func UpdateEmployee() http.HandlerFunc {
 
@@ -124,7 +130,7 @@ func UpdateEmployee() http.HandlerFunc {
 			w.Write([]byte(errorMessage))
 			return
 		}
-		producers.KafkaSendStruct(empl, "EmployeePUTRequest")
+		producers.KafkaSend(empl, "EmployeePUTRequest")
 		msg := consumers.KafkaGetStruct("EmployeePUTResponse")
 		if string(msg) != "Successful update" {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -170,7 +176,7 @@ func FormUpdateEmployee() http.HandlerFunc {
 			w.Write([]byte(errorMessage))
 			return
 		}
-		producers.KafkaSendStruct(empl, "EmployeePUTRequest")
+		producers.KafkaSend(empl, "EmployeePUTRequest")
 		msg := consumers.KafkaGetStruct("EmployeePUTResponse")
 		if string(msg) != "Successful update" {
 			w.WriteHeader(http.StatusInternalServerError)

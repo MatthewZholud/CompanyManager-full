@@ -40,12 +40,16 @@ func main() {
 	msg2 := make(chan []byte)
 	msg3 := make(chan []byte)
 	msg4 := make(chan []byte)
+	msg5 := make(chan []byte)
+
 
 
 	go consumers.KafkaConsumer("EmployeeGETRequest", msg1)
 	go consumers.KafkaConsumer("EmployeePOSTRequest", msg2)
 	go consumers.KafkaConsumer("EmployeePUTRequest", msg3)
 	go consumers.KafkaConsumer("EmployeeDeleteRequest", msg4)
+	go consumers.KafkaConsumer("EmployeeByCompanyGETRequest", msg5)
+
 
 
 
@@ -59,7 +63,10 @@ func main() {
 			service.UpdateEmployee(message)
 		case message := <-msg4:
 			service.DeleteEmployee(message)
+		case message := <-msg5:
+			service.GetEmployeeByCompany(message)
 		}
+
 	}
 
 }

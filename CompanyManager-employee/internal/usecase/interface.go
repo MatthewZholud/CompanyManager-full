@@ -4,6 +4,7 @@ import "github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/int
 
 type Reader interface {
 	Get(id int64) (*employee.Employee, error)
+	GetEmployeesByCompany(id int64) (*[]employee.Employee, error)
 }
 
 type Writer interface {
@@ -18,8 +19,9 @@ type Repository interface {
 }
 
 type UseCase interface {
-	GetEmployee(message string)
+	GetEmployee(message []byte)
 	CreateEmployee(message []byte)
 	UpdateEmployee(message []byte)
 	DeleteEmployee(message []byte)
+	GetEmployeeByCompany(message []byte)
 }

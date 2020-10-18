@@ -17,17 +17,7 @@ func getKafkaWriter(kafkaURL, topic string) *kafka.Writer {
 	})
 }
 
-func KafkaSendId(id, topic string) {
-	writer := getKafkaWriter("kafka:9092", topic)
-	defer writer.Close()
-
-	writer.WriteMessages(context.Background(),
-			kafka.Message{
-				Value: []byte(id) })
-}
-
-
-func KafkaSendStruct(str []byte, topic string) {
+func KafkaSend(str []byte, topic string) {
 	writer := getKafkaWriter("kafka:9092", topic)
 	defer writer.Close()
 
