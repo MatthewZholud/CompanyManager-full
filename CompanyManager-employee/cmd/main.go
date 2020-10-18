@@ -3,10 +3,9 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/domain/entity/employee"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/domain/kafka/consumers"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/domain/kafka/producers"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/domain/usecase"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/driver/repository"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/kafka/consumers"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/usecase"
 	//"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/domain/kafka/producers"
 
 	"os"
@@ -31,29 +30,25 @@ func main() {
 		panic(err)
 	}
 
-	conn := employee.NewPostgresRepository(db)
+	conn := repository.NewPostgresRepository(db)
+	service := usecase.NewService(conn)
+
 
 	//consumers.ExampleConsumerGroupParallelReaders()
 	//topics := []string{"getCompany", "getEmployee"}
 
-	msg1 := make(chan string)
-	msg2 := make(chan string)
+	msg1 := make(chan []byte)
+	msg2 := make(chan []byte)
 
-	go consumers.GetFromApiEmployee("getEmployee", msg1)
-	go consumers.GetFromApiEmployee("getCompany", msg2)
+	go consumers.KafkaConsumer("EmployeeGETRequest", msg1)
+	go consumers.KafkaConsumer("EmployeePOSTRequest", msg2)
 
 	for {
 		select {
 		case message := <-msg2:
-			fmt.Println("main", message)
-
+			service.CreateEmployee(message)
 		case message := <-msg1:
-			id := usecase.MessageService(message)
-			empl, err := conn.GetEmployee(id)
-			if err != nil {
-				panic(err)
-			}
-			producers.SendFromApiEmployee(empl)
+			service.GetEmployee(message)
 		}
 	}
 

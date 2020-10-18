@@ -3,13 +3,12 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/domain/kafka/consumers"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/domain/kafka/producers"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/domain/usecase"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/driver/repository"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/kafka/consumers"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/usecase"
 	"log"
 	"os"
 
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/domain/entity/company"
 	_ "github.com/lib/pq"
 )
 
@@ -30,26 +29,24 @@ func main() {
 	}
 	defer db.Close()
 
-	conn := company.NewPostgresRepository(db)
+	conn := repository.NewPostgresRepository(db)
+	service := usecase.NewService(conn)
 
 
-	msg1 := make(chan string)
-	msg2 := make(chan string)
 
-	go consumers.GetFromApiCompany("getCompany", msg1)
+	msg1 := make(chan []byte)
+	msg2 := make(chan []byte)
+
+	go consumers.KafkaConsumer("CompanyGETRequest", msg1)
+	go consumers.KafkaConsumer("CompanyPOSTRequest", msg2)
+
 
 	for {
 		select {
 		case message := <-msg2:
-			fmt.Println("main", message)
-
+			service.CreateCompany(message)
 		case message := <-msg1:
-			id := usecase.MessageService(message)
-			company, err := conn.GetCompany(id)
-			if err != nil {
-				panic(err)
-			}
-			producers.SendFromApiCompany(company)
+			service.GetCompany(message)
 		}
 	}
 
