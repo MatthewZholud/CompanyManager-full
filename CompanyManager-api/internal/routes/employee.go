@@ -8,6 +8,7 @@ import (
 )
 
 func RegisterEmployeeRoutes(r *mux.Router) *mux.Router {
+
 	r.HandleFunc("/employee", handlers.CreateEmployee()).Methods(http.MethodPost)
 	r.HandleFunc("/employee", handlers.UpdateEmployee()).Methods(http.MethodPut)
 	r.HandleFunc("/employee/{id}", handlers.GetEmployee()).Methods(http.MethodGet)

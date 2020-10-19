@@ -4,6 +4,8 @@ package routes
 import (
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/handlers"
 
+	_ "net/http/pprof"
+
 	"github.com/gorilla/mux"
 	"net/http"
 )

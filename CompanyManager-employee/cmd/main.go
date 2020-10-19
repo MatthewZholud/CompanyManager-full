@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/driver/repository"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/kafka/consumers"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/profiling"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/usecase"
 	//"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/domain/kafka/producers"
 
@@ -12,6 +13,9 @@ import (
 
 	_ "github.com/lib/pq"
 )
+
+
+
 
 func main() {
 	PsqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
@@ -33,6 +37,7 @@ func main() {
 	conn := repository.NewPostgresRepository(db)
 	service := usecase.NewService(conn)
 
+	go profiling.ProfilingServer()
 
 
 

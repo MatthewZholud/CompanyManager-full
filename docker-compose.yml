@@ -37,6 +37,8 @@ services:
   company:
     build:
       context: CompanyManager-company/.
+    ports:
+      - "8006:8006"
     env_file:
       - .env
     environment:
@@ -51,7 +53,7 @@ services:
     build:
       context: CompanyManager-employee/.
     ports:
-      - "8888:8888"
+      - "8007:8007"
     env_file:
       - .env
     environment:

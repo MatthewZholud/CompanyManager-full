@@ -6,12 +6,14 @@ import (
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/driver/repository"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/kafka/consumers"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/usecase"
+
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/profiling"
+
 	"log"
 	"os"
 
 	_ "github.com/lib/pq"
 )
-
 
 func main() {
 
@@ -28,6 +30,8 @@ func main() {
 
 	conn := repository.NewPostgresRepository(db)
 	service := usecase.NewService(conn)
+
+	go profiling.ProfilingServer()
 
 	msg1 := make(chan []byte)
 	msg2 := make(chan []byte)

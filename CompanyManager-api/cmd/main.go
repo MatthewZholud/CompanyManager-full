@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	_ "net/http/pprof"
+
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/routes"
 
 	"github.com/gorilla/mux"
@@ -14,11 +16,12 @@ const (
 )
 
 func main() {
-	r := mux.NewRouter()
 
+	r := mux.NewRouter()
 	routes.RegisterEmployeeRoutes(r)
 	routes.RegisterCompanyRoutes(r)
+	routes.RegisterProfilingRoutes(r)
 
-	//routes.RegisterCompanyRoutes(r)
+	//profiling.RegisterCompanyRoutes(r)
 	log.Fatal(http.ListenAndServe(apiGatewayPort, r))
 }
