@@ -37,7 +37,6 @@ func main() {
 	msg2 := make(chan []byte)
 	msg3 := make(chan []byte)
 	msg4 := make(chan []byte)
-	//msg5 := make(chan []byte)
 
 	go consumers.KafkaConsumer("CompanyGETRequest", msg1)
 	go consumers.KafkaConsumer("CompanyPOSTRequest", msg2)

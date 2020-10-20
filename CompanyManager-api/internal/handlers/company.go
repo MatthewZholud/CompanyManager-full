@@ -60,6 +60,7 @@ func GetCompany() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		errorMessage := "Error reading company"
 		var company *presenter.Company
+
 		producers.KafkaSend([]byte(mux.Vars(r)["companyId"]), "CompanyGETRequest")
 		msg := consumers.KafkaGetStruct("CompanyGETResponse")
 		company, err := JsonToCompany(msg)

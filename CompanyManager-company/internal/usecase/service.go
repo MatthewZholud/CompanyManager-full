@@ -7,12 +7,10 @@ import (
 	"log"
 )
 
-//Service book usecase
 type Service struct {
 	repo Repository
 }
 
-//NewService create new service
 func NewService(r Repository) *Service {
 	return &Service{
 		repo: r,
@@ -20,7 +18,10 @@ func NewService(r Repository) *Service {
 }
 
 func (s *Service) GetCompany(message []byte)  {
-	id := StringToInt64(string(message))
+	id, err:= StringToInt64(string(message))
+	if err != nil {
+		log.Fatal(err)
+	}
 	company, err := s.repo.Get(id)
 	if err != nil {
 		log.Fatal(entity.ErrNotFound)
@@ -37,9 +38,12 @@ func (s *Service) GetCompany(message []byte)  {
 
 
 func (s *Service) CreateCompany(message []byte) {
-	comp := JsonToCompany(message)
+	comp, err := JsonToCompany(message)
+	if err != nil {
+		log.Fatal(entity.ErrCannotBeCreated)
+	}
 	//newComp := company.NewCompany(comp.Name, comp.Legalform)
-	id, err := s.repo.Create(&comp)
+	id, err := s.repo.Create(comp)
 	if err != nil {
 		log.Fatal(entity.ErrCannotBeCreated)
 	}
@@ -47,8 +51,11 @@ func (s *Service) CreateCompany(message []byte) {
 }
 
 func (s *Service) UpdateCompany(message []byte) {
-	comp := JsonToCompany(message)
-	response, err := s.repo.Update(&comp)
+	comp, err := JsonToCompany(message)
+	if err != nil {
+		log.Fatal(err)
+	}
+	response, err := s.repo.Update(comp)
 	if err != nil {
 		log.Fatal(entity.ErrCannotBeCreated)
 	}
@@ -57,7 +64,10 @@ func (s *Service) UpdateCompany(message []byte) {
 
 
 func (s *Service) DeleteCompany(message []byte)  {
-	id := StringToInt64(string(message))
+	id, err := StringToInt64(string(message))
+	if err != nil {
+		log.Fatal(err)
+	}
 	response, err := s.repo.Delete(id)
 	if err != nil {
 		log.Fatal(entity.ErrNotFound)
