@@ -14,7 +14,7 @@ func getKafkaReader(kafkaURL, topic string) *kafka.Reader {
 		Brokers:  brokers,
 		Topic:    topic,
 		StartOffset: kafka.LastOffset,
-		MaxWait: 1 * time.Millisecond,
+		MaxWait: 10 * time.Millisecond,
 
 	})
 }

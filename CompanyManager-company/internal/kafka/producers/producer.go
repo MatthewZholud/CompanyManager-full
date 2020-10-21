@@ -13,7 +13,7 @@ func getKafkaWriter(kafkaURL, topic string) *kafka.Writer {
 		Brokers:  brokers,
 		Topic:    topic,
 		Balancer: &kafka.LeastBytes{},
-		BatchTimeout: 1 * time.Millisecond,
+		BatchTimeout: 10 * time.Millisecond,
 	})
 }
 

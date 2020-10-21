@@ -1,5 +1,10 @@
+# github.com/davecgh/go-spew v1.1.1
+github.com/davecgh/go-spew/spew
 # github.com/fsnotify/fsnotify v1.4.9
 github.com/fsnotify/fsnotify
+# github.com/gojuno/minimock/v3 v3.0.8
+## explicit
+github.com/gojuno/minimock/v3
 # github.com/golang/snappy v0.0.1
 github.com/golang/snappy
 # github.com/gorilla/mux v1.8.0
@@ -60,6 +65,8 @@ github.com/onsi/gomega/types
 # github.com/pierrec/lz4 v2.0.5+incompatible
 github.com/pierrec/lz4
 github.com/pierrec/lz4/internal/xxh32
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
 # github.com/segmentio/kafka-go v0.4.5
 ## explicit
 github.com/segmentio/kafka-go

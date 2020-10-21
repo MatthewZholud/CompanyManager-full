@@ -2,9 +2,7 @@ package usecase
 
 import (
 	"encoding/json"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/entity"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/kafka/producers"
-	"log"
 )
 
 type Service struct {
@@ -17,60 +15,58 @@ func NewService(r Repository) *Service {
 	}
 }
 
-func (s *Service) GetCompany(message []byte)  {
-	id, err:= StringToInt64(string(message))
+func (s *Service) GetCompany(message []byte) error {
+	id, err := StringToInt64(string(message))
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	company, err := s.repo.Get(id)
 	if err != nil {
-		log.Fatal(entity.ErrNotFound)
+		return err
 	}
-	if err != nil {
-		log.Fatal(err)
-	}
-	c, err := json.Marshal(company)
-	if err != nil {
-		log.Fatal(err)
-	}
+	c, _ := json.Marshal(company)
 	producers.KafkaSend(c, "CompanyGETResponse")
+	return nil
 }
 
-
-func (s *Service) CreateCompany(message []byte) {
+func (s *Service) CreateCompany(message []byte) error {
 	comp, err := JsonToCompany(message)
 	if err != nil {
-		log.Fatal(entity.ErrCannotBeCreated)
+		return err
 	}
 	//newComp := company.NewCompany(comp.Name, comp.Legalform)
 	id, err := s.repo.Create(comp)
 	if err != nil {
-		log.Fatal(entity.ErrCannotBeCreated)
+		return err
 	}
 	producers.KafkaSend([]byte(id), "CompanyPOSTResponse")
+	return nil
 }
 
-func (s *Service) UpdateCompany(message []byte) {
+func (s *Service) UpdateCompany(message []byte) error {
 	comp, err := JsonToCompany(message)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	response, err := s.repo.Update(comp)
 	if err != nil {
-		log.Fatal(entity.ErrCannotBeCreated)
+		return err
 	}
 	producers.KafkaSend([]byte(response), "CompanyPUTResponse")
+	return nil
+
 }
 
-
-func (s *Service) DeleteCompany(message []byte)  {
+func (s *Service) DeleteCompany(message []byte) error {
 	id, err := StringToInt64(string(message))
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	response, err := s.repo.Delete(id)
 	if err != nil {
-		log.Fatal(entity.ErrNotFound)
+		return err
 	}
 	producers.KafkaSend([]byte(response), "CompanyDeleteResponse")
+	return nil
+
 }

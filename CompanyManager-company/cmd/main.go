@@ -31,6 +31,7 @@ func main() {
 	conn := repository.NewPostgresRepository(db)
 	service := usecase.NewService(conn)
 
+
 	go profiling.ProfilingServer()
 
 	msg1 := make(chan []byte)
@@ -46,13 +47,27 @@ func main() {
 	for {
 		select {
 		case message := <-msg2:
-			service.CreateCompany(message)
+			err := service.CreateCompany(message)
+			if err != nil {
+				log.Fatal(err.Error())
+			}
 		case message := <-msg1:
-			service.GetCompany(message)
+			err := service.GetCompany(message)
+			if err != nil {
+				log.Fatal(err.Error())
+			}
 		case message := <-msg3:
-			service.UpdateCompany(message)
+			err := service.UpdateCompany(message)
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
 		case message := <-msg4:
-			service.DeleteCompany(message)
+			err := service.DeleteCompany(message)
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
 		}
 	}
 }

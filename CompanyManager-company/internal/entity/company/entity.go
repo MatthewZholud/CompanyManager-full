@@ -18,11 +18,11 @@ type Company struct {
 	Legalform string `json:"legal_form"`
 }
 
-func NewCompany(name, legalForm string, id int64) *Company {
-	comp := &Company{
-		ID:        id,
-		Name:      name,
-		Legalform: legalForm,
-	}
-	return comp
-}
+//func NewCompany(name, legalForm string, id int64) *Company {
+//	comp := &Company{
+//		ID:        id,
+//		Name:      name,
+//		Legalform: legalForm,
+//	}
+//	return comp
+//}

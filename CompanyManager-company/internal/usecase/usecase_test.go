@@ -2,9 +2,8 @@ package usecase
 
 import (
 	"encoding/json"
-	"testing"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/entity/company"
-
+	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -13,19 +12,20 @@ import (
 func TestCart(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Usecase Suite")
+
 }
 
 func newFixtureCompany1() *company.Company {
 	return &company.Company{
 		ID:        1,
-		Name:     "Mega",
-		Legalform:  "OOO",
+		Name:      "Mega",
+		Legalform: "OOO",
 	}
 }
 
-type fakeCompany struct{
-	ID string
-	Name string
+type fakeCompany struct {
+	ID        string
+	Name      string
 	Legalform string
 }
 
@@ -43,7 +43,6 @@ var _ = Describe("Usecase", func() {
 			Expect(got).To(Equal(int64(2)))
 		})
 	})
-
 
 	Describe("JsonToCompany", func() {
 		It("Should return an error if not cant atoi", func() {

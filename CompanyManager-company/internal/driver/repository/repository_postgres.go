@@ -26,17 +26,14 @@ func (s *postgresRepo) Get(id int64) (*company.Company, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		if err := rows.Scan(&company.ID, &company.Name, &company.Legalform);
-			err != nil {
-			return nil, err
-		}
+		rows.Scan(&company.ID, &company.Name, &company.Legalform)
 	}
 	return &company, nil
 }
 
 func (s *postgresRepo) Create(c *company.Company) (string, error) {
 	var compId string
-	err := s.db.QueryRow("INSERT INTO company(name, legal_form) VALUES ($1, $2) RETURNING company_id", c.Name, c.Legalform).Scan(compId)
+	err := s.db.QueryRow("INSERT INTO company(name, legal_form) VALUES ($1, $2) RETURNING company_id", c.Name, c.Legalform).Scan(&compId)
 	if err != nil {
 		return compId, err
 	}
