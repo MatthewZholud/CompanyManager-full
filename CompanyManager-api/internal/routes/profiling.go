@@ -1,12 +1,14 @@
 package routes
 
 import (
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/logger"
 	"github.com/gorilla/mux"
 	"net/http"
 	"net/http/pprof"
 )
 
 func RegisterProfilingRoutes(r *mux.Router) *mux.Router {
+	logger.Log.Infof("Ready to process profiling requests ")
 	r.HandleFunc(
 		"/debug/pprof/", pprof.Index,
 	)

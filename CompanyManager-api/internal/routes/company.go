@@ -3,6 +3,7 @@ package routes
 
 import (
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/handlers"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/logger"
 
 	_ "net/http/pprof"
 
@@ -11,7 +12,7 @@ import (
 )
 
 func RegisterCompanyRoutes(r *mux.Router) *mux.Router {
-
+	logger.Log.Infof("Ready to process company requests ")
 	r.HandleFunc("/company/", handlers.CreateCompany()).Methods(http.MethodPost)
 	r.HandleFunc("/company/", handlers.UpdateCompany()).Methods(http.MethodPut)
 	r.HandleFunc("/company/{companyId}", handlers.GetCompany()).Methods(http.MethodGet)

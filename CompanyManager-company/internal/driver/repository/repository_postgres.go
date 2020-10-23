@@ -19,7 +19,6 @@ func NewPostgresRepository(db *sql.DB) *postgresRepo {
 
 func (s *postgresRepo) Get(id int64) (*company.Company, error) {
 	var company company.Company
-
 	rows, err := s.db.Query("SELECT * from company WHERE company_id = $1", id)
 	if err != nil {
 		logger.Log.Debug("Get query to Db was failed")

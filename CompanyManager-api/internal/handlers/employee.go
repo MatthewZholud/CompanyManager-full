@@ -2,10 +2,8 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/logger"
 	"strconv"
-
-	//"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/domain/presenter"
 
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/kafka/consumers"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/kafka/producers"
@@ -33,21 +31,34 @@ func CreateEmployee() http.HandlerFunc {
 
 		err := json.NewDecoder(r.Body).Decode(&input)
 		if err != nil {
-			log.Println(err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(errorMessage))
+			logger.Log.Fatalf("Can't get employee struct from body: %v", err)
+			respondWithError(w, errorMessage)
 			return
 		}
 		empl, err := json.Marshal(input)
 		if err != nil {
-			log.Println(err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(errorMessage))
+			logger.Log.Fatalf("Can't prepare company struct for sending to kafka: %v", err)
+			respondWithError(w, errorMessage)
 			return
 		}
-		producers.KafkaSend(empl, "EmployeePOSTRequest")
-		msg := consumers.KafkaGetStruct("EmployeePOSTResponse")
-		id := ByteToInt64(msg)
+		err = producers.KafkaSend(empl, "EmployeePOSTRequest")
+		if err != nil {
+			logger.Log.Fatalf("Error sending message to kafka: %v", err)
+			respondWithError(w, errorMessage)
+			return
+		}
+		msg, err := consumers.KafkaGetStruct("EmployeePOSTResponse")
+		if err != nil {
+			logger.Log.Fatalf("Error sending message to kafka: %v", err)
+			respondWithError(w, errorMessage)
+			return
+		}
+		id, err := ByteToInt64(msg)
+		if err != nil {
+			respondWithError(w, errorMessage)
+			logger.Log.Fatalf("Can't convert byte to int: %v", err)
+			return
+		}
 		toJ := &presenter.Employee{
 			ID:         id,
 			Name:       input.Name,
@@ -61,9 +72,11 @@ func CreateEmployee() http.HandlerFunc {
 
 		w.WriteHeader(http.StatusCreated)
 		if err := json.NewEncoder(w).Encode(toJ); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(errorMessage))
+			logger.Log.Fatalf("Can't display: %v", err)
+			respondWithError(w, errorMessage)
 			return
+		} else {
+			logger.Log.Infof("Create handler completed successfully")
 		}
 	}
 }
@@ -73,16 +86,31 @@ func GetEmployee() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		errorMessage := "Error reading employees"
 		var employee *presenter.Employee
-		producers.KafkaSend([]byte(mux.Vars(r)["id"]), "EmployeeGETRequest")
-		msg := consumers.KafkaGetStruct("EmployeeGETResponse")
-		employee, err := JsonToEmployee(msg)
+		err := producers.KafkaSend([]byte(mux.Vars(r)["id"]), "EmployeeGETRequest")
 		if err != nil {
-			log.Println(err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(errorMessage))
+			logger.Log.Fatalf("Error sending message to kafka: %v", err)
+			respondWithError(w, errorMessage)
 			return
 		}
-		json.NewEncoder(w).Encode(employee)
+		msg, err := consumers.KafkaGetStruct("EmployeeGETResponse")
+		if err != nil {
+			logger.Log.Fatalf("Error sending message to kafka: %v", err)
+			respondWithError(w, errorMessage)
+			return
+		}
+		employee, err = JsonToEmployee(msg)
+		if err != nil {
+			logger.Log.Fatalf("Can't convert json to employee struct: %v", err)
+			respondWithError(w, errorMessage)
+			return
+		}
+		if err := json.NewEncoder(w).Encode(employee); err != nil {
+			logger.Log.Fatalf("Can't display: %v", err)
+			respondWithError(w, errorMessage)
+			return
+		} else {
+			logger.Log.Infof("Get handler completed successfully")
+		}
 	}
 }
 
@@ -90,12 +118,24 @@ func DeleteEmployee() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		errorMessage := "Error deleting employee"
-		producers.KafkaSend([]byte(mux.Vars(r)["id"]), "EmployeeDeleteRequest")
-		msg := consumers.KafkaGetStruct("EmployeeDeleteResponse")
-		if string(msg) != "Successful delete" {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(errorMessage))
+		err := producers.KafkaSend([]byte(mux.Vars(r)["id"]), "EmployeeDeleteRequest")
+		if err != nil {
+			logger.Log.Fatalf("Error sending message to kafka: %v", err)
+			respondWithError(w, errorMessage)
 			return
+		}
+		msg, err := consumers.KafkaGetStruct("EmployeeDeleteResponse")
+		if err != nil {
+			logger.Log.Fatalf("Error sending message to kafka: %v", err)
+			respondWithError(w, errorMessage)
+			return
+		}
+		if string(msg) != "Successful delete" {
+			logger.Log.Fatalf("Deleting failed: %v", err)
+			respondWithError(w, errorMessage)
+			return
+		} else {
+			logger.Log.Infof("Successful delete")
 		}
 	}
 }
@@ -118,24 +158,34 @@ func UpdateEmployee() http.HandlerFunc {
 
 		err := json.NewDecoder(r.Body).Decode(&update)
 		if err != nil {
-			log.Println(err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(errorMessage))
+			logger.Log.Fatalf("Can't get company struct from body: %v", err)
+			respondWithError(w, errorMessage)
 			return
 		}
 		empl, err := json.Marshal(update)
 		if err != nil {
-			log.Println(err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(errorMessage))
+			logger.Log.Fatalf("Can't prepare company struct for sending to kafka: %v", err)
+			respondWithError(w, errorMessage)
 			return
 		}
-		producers.KafkaSend(empl, "EmployeePUTRequest")
-		msg := consumers.KafkaGetStruct("EmployeePUTResponse")
-		if string(msg) != "Successful update" {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(errorMessage))
+		err = producers.KafkaSend(empl, "EmployeePUTRequest")
+		if err != nil {
+			logger.Log.Fatalf("Error sending message to kafka: %v", err)
+			respondWithError(w, errorMessage)
 			return
+		}
+		msg, err := consumers.KafkaGetStruct("EmployeePUTResponse")
+		if err != nil {
+			logger.Log.Fatalf("Error sending message to kafka: %v", err)
+			respondWithError(w, errorMessage)
+			return
+		}
+		if string(msg) != "Successful update" {
+			respondWithError(w, errorMessage)
+			logger.Log.Fatalf("Updating failed: %v", err)
+			return
+		} else {
+			logger.Log.Infof("Successful update")
 		}
 	}
 }
@@ -145,17 +195,16 @@ func FormUpdateEmployee() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		errorMessage := "Error updating employee"
-
 		id, err := strconv.Atoi(mux.Vars(r)["id"])
 		if err != nil {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			w.Write([]byte(errorMessage))
+			logger.Log.Fatalf("Can't convert string to int: %v", err)
+			respondWithError(w, errorMessage)
 			return
 		}
 		companyID, err := strconv.Atoi(r.Form.Get("company_id"))
 		if err != nil {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			w.Write([]byte(errorMessage))
+			logger.Log.Fatalf("Can't convert string to int: %v", err)
+			respondWithError(w, errorMessage)
 			return
 		}
 
@@ -171,17 +220,28 @@ func FormUpdateEmployee() http.HandlerFunc {
 		}
 		empl, err := json.Marshal(update)
 		if err != nil {
-			log.Println(err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(errorMessage))
+			logger.Log.Fatalf("Can't prepare company struct for sending to kafka: %v", err)
+			respondWithError(w, errorMessage)
 			return
 		}
-		producers.KafkaSend(empl, "EmployeePUTRequest")
-		msg := consumers.KafkaGetStruct("EmployeePUTResponse")
-		if string(msg) != "Successful update" {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(errorMessage))
+		err = producers.KafkaSend(empl, "EmployeePUTRequest")
+		if err != nil {
+			logger.Log.Fatalf("Error sending message to kafka: %v", err)
+			respondWithError(w, errorMessage)
 			return
+		}
+		msg, err := consumers.KafkaGetStruct("EmployeePUTResponse")
+		if err != nil {
+			logger.Log.Fatalf("Error sending message to kafka: %v", err)
+			respondWithError(w, errorMessage)
+			return
+		}
+		if string(msg) != "Successful update" {
+			respondWithError(w, errorMessage)
+			logger.Log.Fatalf("Updating failed: %v", err)
+			return
+		} else {
+			logger.Log.Infof("Successful update")
 		}
 	}
 }

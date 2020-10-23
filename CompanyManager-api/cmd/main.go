@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/logger"
 	"net/http"
 
 	_ "net/http/pprof"
@@ -16,12 +16,15 @@ const (
 )
 
 func main() {
-
+	logger.InitLog()
 	r := mux.NewRouter()
 	routes.RegisterEmployeeRoutes(r)
 	routes.RegisterCompanyRoutes(r)
 	routes.RegisterProfilingRoutes(r)
 
 	//profiling.RegisterCompanyRoutes(r)
-	log.Fatal(http.ListenAndServe(apiGatewayPort, r))
+	err := http.ListenAndServe(apiGatewayPort, r)
+	if err != nil {
+		logger.Log.Fatal("Can't connect to server: ", err)
+	}
 }

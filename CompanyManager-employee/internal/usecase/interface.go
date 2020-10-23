@@ -19,9 +19,9 @@ type Repository interface {
 }
 
 type UseCase interface {
-	GetEmployee(message []byte)
-	CreateEmployee(message []byte)
-	UpdateEmployee(message []byte)
-	DeleteEmployee(message []byte)
-	GetEmployeeByCompany(message []byte)
+	GetEmployee(message []byte) error
+	CreateEmployee(message []byte) error
+	UpdateEmployee(message []byte) error
+	DeleteEmployee(message []byte) error
+	GetEmployeeByCompany(message []byte) error
 }

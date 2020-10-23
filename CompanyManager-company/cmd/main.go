@@ -29,6 +29,11 @@ func main() {
 	}
 	defer db.Close()
 
+	err = db.Ping()
+	if err != nil {
+		logger.Log.Fatal("Can't keep the connection with Db:", err)
+	}
+
 	conn := repository.NewPostgresRepository(db)
 	service := usecase.NewService(conn)
 
