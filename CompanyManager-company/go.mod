@@ -9,4 +9,5 @@ require (
 	github.com/onsi/ginkgo v1.14.2
 	github.com/onsi/gomega v1.10.3
 	github.com/segmentio/kafka-go v0.4.5
+	go.uber.org/zap v1.16.0
 )

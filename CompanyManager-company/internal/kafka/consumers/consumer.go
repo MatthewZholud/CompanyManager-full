@@ -2,9 +2,8 @@ package consumers
 
 import (
 	"context"
-	"fmt"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/logger"
 	"github.com/segmentio/kafka-go"
-	"log"
 	"strings"
 	"time"
 )
@@ -15,25 +14,26 @@ func getKafkaReader(kafkaURL, topic string) *kafka.Reader {
 		Brokers:     brokers,
 		Topic:       topic,
 		StartOffset: kafka.LastOffset,
-		MaxWait: 10 * time.Millisecond,
+		MaxWait:     10 * time.Millisecond,
 	})
 }
 
-func KafkaConsumer(topic string, ch chan []byte) []byte {
+func KafkaConsumer(topic, brokers string, ch chan []byte) []byte {
 
-	reader := getKafkaReader("kafka:9092", topic)
+	reader := getKafkaReader(brokers, topic)
 	reader.SetOffset(kafka.LastOffset)
 	defer reader.Close()
 
-	fmt.Println("start consuming", topic ,"... !!")
+	logger.Log.Info("start consuming", topic, "... !!")
 
 	for {
 		m, err := reader.ReadMessage(context.Background())
 		if err != nil {
-			log.Fatalln(err)
+			logger.Log.Fatalf("Can't read messages from Kafka with topic %v: %v", topic, err)
+		} else {
+			logger.Log.Infof("Got message from kafka, topic: %v", topic)
 		}
-
-			ch <- m.Value
+		ch <- m.Value
 	}
 	return nil
 }

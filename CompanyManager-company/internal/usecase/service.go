@@ -3,6 +3,7 @@ package usecase
 import (
 	"encoding/json"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/kafka/producers"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/logger"
 )
 
 type Service struct {
@@ -23,6 +24,8 @@ func (s *Service) GetCompany(message []byte) error {
 	company, err := s.repo.Get(id)
 	if err != nil {
 		return err
+	} else {
+		logger.Log.Info("Working with database by GET request was successful")
 	}
 	c, _ := json.Marshal(company)
 	producers.KafkaSend(c, "CompanyGETResponse")
@@ -38,6 +41,8 @@ func (s *Service) CreateCompany(message []byte) error {
 	id, err := s.repo.Create(comp)
 	if err != nil {
 		return err
+	} else {
+		logger.Log.Info("Working with database by CREATE request was successful")
 	}
 	producers.KafkaSend([]byte(id), "CompanyPOSTResponse")
 	return nil
@@ -51,6 +56,8 @@ func (s *Service) UpdateCompany(message []byte) error {
 	response, err := s.repo.Update(comp)
 	if err != nil {
 		return err
+	} else {
+		logger.Log.Info("Working with database by UPDATE request was successful")
 	}
 	producers.KafkaSend([]byte(response), "CompanyPUTResponse")
 	return nil
@@ -65,8 +72,9 @@ func (s *Service) DeleteCompany(message []byte) error {
 	response, err := s.repo.Delete(id)
 	if err != nil {
 		return err
+	} else {
+		logger.Log.Info("Working with database by DELETE request was successful")
 	}
 	producers.KafkaSend([]byte(response), "CompanyDeleteResponse")
 	return nil
-
 }
