@@ -16,25 +16,25 @@ import (
 type UseCaseMock struct {
 	t minimock.Tester
 
-	funcCreateCompany          func(message []byte) (err error)
+	funcCreateCompany          func(message []byte) (ba1 []byte, err error)
 	inspectFuncCreateCompany   func(message []byte)
 	afterCreateCompanyCounter  uint64
 	beforeCreateCompanyCounter uint64
 	CreateCompanyMock          mUseCaseMockCreateCompany
 
-	funcDeleteCompany          func(message []byte) (err error)
+	funcDeleteCompany          func(message []byte) (ba1 []byte, err error)
 	inspectFuncDeleteCompany   func(message []byte)
 	afterDeleteCompanyCounter  uint64
 	beforeDeleteCompanyCounter uint64
 	DeleteCompanyMock          mUseCaseMockDeleteCompany
 
-	funcGetCompany          func(message []byte) (err error)
+	funcGetCompany          func(message []byte) (ba1 []byte, err error)
 	inspectFuncGetCompany   func(message []byte)
 	afterGetCompanyCounter  uint64
 	beforeGetCompanyCounter uint64
 	GetCompanyMock          mUseCaseMockGetCompany
 
-	funcUpdateCompany          func(message []byte) (err error)
+	funcUpdateCompany          func(message []byte) (ba1 []byte, err error)
 	inspectFuncUpdateCompany   func(message []byte)
 	afterUpdateCompanyCounter  uint64
 	beforeUpdateCompanyCounter uint64
@@ -87,6 +87,7 @@ type UseCaseMockCreateCompanyParams struct {
 
 // UseCaseMockCreateCompanyResults contains results of the UseCase.CreateCompany
 type UseCaseMockCreateCompanyResults struct {
+	ba1 []byte
 	err error
 }
 
@@ -122,7 +123,7 @@ func (mmCreateCompany *mUseCaseMockCreateCompany) Inspect(f func(message []byte)
 }
 
 // Return sets up results that will be returned by UseCase.CreateCompany
-func (mmCreateCompany *mUseCaseMockCreateCompany) Return(err error) *UseCaseMock {
+func (mmCreateCompany *mUseCaseMockCreateCompany) Return(ba1 []byte, err error) *UseCaseMock {
 	if mmCreateCompany.mock.funcCreateCompany != nil {
 		mmCreateCompany.mock.t.Fatalf("UseCaseMock.CreateCompany mock is already set by Set")
 	}
@@ -130,12 +131,12 @@ func (mmCreateCompany *mUseCaseMockCreateCompany) Return(err error) *UseCaseMock
 	if mmCreateCompany.defaultExpectation == nil {
 		mmCreateCompany.defaultExpectation = &UseCaseMockCreateCompanyExpectation{mock: mmCreateCompany.mock}
 	}
-	mmCreateCompany.defaultExpectation.results = &UseCaseMockCreateCompanyResults{err}
+	mmCreateCompany.defaultExpectation.results = &UseCaseMockCreateCompanyResults{ba1, err}
 	return mmCreateCompany.mock
 }
 
 //Set uses given function f to mock the UseCase.CreateCompany method
-func (mmCreateCompany *mUseCaseMockCreateCompany) Set(f func(message []byte) (err error)) *UseCaseMock {
+func (mmCreateCompany *mUseCaseMockCreateCompany) Set(f func(message []byte) (ba1 []byte, err error)) *UseCaseMock {
 	if mmCreateCompany.defaultExpectation != nil {
 		mmCreateCompany.mock.t.Fatalf("Default expectation is already set for the UseCase.CreateCompany method")
 	}
@@ -164,13 +165,13 @@ func (mmCreateCompany *mUseCaseMockCreateCompany) When(message []byte) *UseCaseM
 }
 
 // Then sets up UseCase.CreateCompany return parameters for the expectation previously defined by the When method
-func (e *UseCaseMockCreateCompanyExpectation) Then(err error) *UseCaseMock {
-	e.results = &UseCaseMockCreateCompanyResults{err}
+func (e *UseCaseMockCreateCompanyExpectation) Then(ba1 []byte, err error) *UseCaseMock {
+	e.results = &UseCaseMockCreateCompanyResults{ba1, err}
 	return e.mock
 }
 
 // CreateCompany implements UseCase
-func (mmCreateCompany *UseCaseMock) CreateCompany(message []byte) (err error) {
+func (mmCreateCompany *UseCaseMock) CreateCompany(message []byte) (ba1 []byte, err error) {
 	mm_atomic.AddUint64(&mmCreateCompany.beforeCreateCompanyCounter, 1)
 	defer mm_atomic.AddUint64(&mmCreateCompany.afterCreateCompanyCounter, 1)
 
@@ -188,7 +189,7 @@ func (mmCreateCompany *UseCaseMock) CreateCompany(message []byte) (err error) {
 	for _, e := range mmCreateCompany.CreateCompanyMock.expectations {
 		if minimock.Equal(e.params, mm_params) {
 			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.err
+			return e.results.ba1, e.results.err
 		}
 	}
 
@@ -204,7 +205,7 @@ func (mmCreateCompany *UseCaseMock) CreateCompany(message []byte) (err error) {
 		if mm_results == nil {
 			mmCreateCompany.t.Fatal("No results are set for the UseCaseMock.CreateCompany")
 		}
-		return (*mm_results).err
+		return (*mm_results).ba1, (*mm_results).err
 	}
 	if mmCreateCompany.funcCreateCompany != nil {
 		return mmCreateCompany.funcCreateCompany(message)
@@ -302,6 +303,7 @@ type UseCaseMockDeleteCompanyParams struct {
 
 // UseCaseMockDeleteCompanyResults contains results of the UseCase.DeleteCompany
 type UseCaseMockDeleteCompanyResults struct {
+	ba1 []byte
 	err error
 }
 
@@ -337,7 +339,7 @@ func (mmDeleteCompany *mUseCaseMockDeleteCompany) Inspect(f func(message []byte)
 }
 
 // Return sets up results that will be returned by UseCase.DeleteCompany
-func (mmDeleteCompany *mUseCaseMockDeleteCompany) Return(err error) *UseCaseMock {
+func (mmDeleteCompany *mUseCaseMockDeleteCompany) Return(ba1 []byte, err error) *UseCaseMock {
 	if mmDeleteCompany.mock.funcDeleteCompany != nil {
 		mmDeleteCompany.mock.t.Fatalf("UseCaseMock.DeleteCompany mock is already set by Set")
 	}
@@ -345,12 +347,12 @@ func (mmDeleteCompany *mUseCaseMockDeleteCompany) Return(err error) *UseCaseMock
 	if mmDeleteCompany.defaultExpectation == nil {
 		mmDeleteCompany.defaultExpectation = &UseCaseMockDeleteCompanyExpectation{mock: mmDeleteCompany.mock}
 	}
-	mmDeleteCompany.defaultExpectation.results = &UseCaseMockDeleteCompanyResults{err}
+	mmDeleteCompany.defaultExpectation.results = &UseCaseMockDeleteCompanyResults{ba1, err}
 	return mmDeleteCompany.mock
 }
 
 //Set uses given function f to mock the UseCase.DeleteCompany method
-func (mmDeleteCompany *mUseCaseMockDeleteCompany) Set(f func(message []byte) (err error)) *UseCaseMock {
+func (mmDeleteCompany *mUseCaseMockDeleteCompany) Set(f func(message []byte) (ba1 []byte, err error)) *UseCaseMock {
 	if mmDeleteCompany.defaultExpectation != nil {
 		mmDeleteCompany.mock.t.Fatalf("Default expectation is already set for the UseCase.DeleteCompany method")
 	}
@@ -379,13 +381,13 @@ func (mmDeleteCompany *mUseCaseMockDeleteCompany) When(message []byte) *UseCaseM
 }
 
 // Then sets up UseCase.DeleteCompany return parameters for the expectation previously defined by the When method
-func (e *UseCaseMockDeleteCompanyExpectation) Then(err error) *UseCaseMock {
-	e.results = &UseCaseMockDeleteCompanyResults{err}
+func (e *UseCaseMockDeleteCompanyExpectation) Then(ba1 []byte, err error) *UseCaseMock {
+	e.results = &UseCaseMockDeleteCompanyResults{ba1, err}
 	return e.mock
 }
 
 // DeleteCompany implements UseCase
-func (mmDeleteCompany *UseCaseMock) DeleteCompany(message []byte) (err error) {
+func (mmDeleteCompany *UseCaseMock) DeleteCompany(message []byte) (ba1 []byte, err error) {
 	mm_atomic.AddUint64(&mmDeleteCompany.beforeDeleteCompanyCounter, 1)
 	defer mm_atomic.AddUint64(&mmDeleteCompany.afterDeleteCompanyCounter, 1)
 
@@ -403,7 +405,7 @@ func (mmDeleteCompany *UseCaseMock) DeleteCompany(message []byte) (err error) {
 	for _, e := range mmDeleteCompany.DeleteCompanyMock.expectations {
 		if minimock.Equal(e.params, mm_params) {
 			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.err
+			return e.results.ba1, e.results.err
 		}
 	}
 
@@ -419,7 +421,7 @@ func (mmDeleteCompany *UseCaseMock) DeleteCompany(message []byte) (err error) {
 		if mm_results == nil {
 			mmDeleteCompany.t.Fatal("No results are set for the UseCaseMock.DeleteCompany")
 		}
-		return (*mm_results).err
+		return (*mm_results).ba1, (*mm_results).err
 	}
 	if mmDeleteCompany.funcDeleteCompany != nil {
 		return mmDeleteCompany.funcDeleteCompany(message)
@@ -517,6 +519,7 @@ type UseCaseMockGetCompanyParams struct {
 
 // UseCaseMockGetCompanyResults contains results of the UseCase.GetCompany
 type UseCaseMockGetCompanyResults struct {
+	ba1 []byte
 	err error
 }
 
@@ -552,7 +555,7 @@ func (mmGetCompany *mUseCaseMockGetCompany) Inspect(f func(message []byte)) *mUs
 }
 
 // Return sets up results that will be returned by UseCase.GetCompany
-func (mmGetCompany *mUseCaseMockGetCompany) Return(err error) *UseCaseMock {
+func (mmGetCompany *mUseCaseMockGetCompany) Return(ba1 []byte, err error) *UseCaseMock {
 	if mmGetCompany.mock.funcGetCompany != nil {
 		mmGetCompany.mock.t.Fatalf("UseCaseMock.GetCompany mock is already set by Set")
 	}
@@ -560,12 +563,12 @@ func (mmGetCompany *mUseCaseMockGetCompany) Return(err error) *UseCaseMock {
 	if mmGetCompany.defaultExpectation == nil {
 		mmGetCompany.defaultExpectation = &UseCaseMockGetCompanyExpectation{mock: mmGetCompany.mock}
 	}
-	mmGetCompany.defaultExpectation.results = &UseCaseMockGetCompanyResults{err}
+	mmGetCompany.defaultExpectation.results = &UseCaseMockGetCompanyResults{ba1, err}
 	return mmGetCompany.mock
 }
 
 //Set uses given function f to mock the UseCase.GetCompany method
-func (mmGetCompany *mUseCaseMockGetCompany) Set(f func(message []byte) (err error)) *UseCaseMock {
+func (mmGetCompany *mUseCaseMockGetCompany) Set(f func(message []byte) (ba1 []byte, err error)) *UseCaseMock {
 	if mmGetCompany.defaultExpectation != nil {
 		mmGetCompany.mock.t.Fatalf("Default expectation is already set for the UseCase.GetCompany method")
 	}
@@ -594,13 +597,13 @@ func (mmGetCompany *mUseCaseMockGetCompany) When(message []byte) *UseCaseMockGet
 }
 
 // Then sets up UseCase.GetCompany return parameters for the expectation previously defined by the When method
-func (e *UseCaseMockGetCompanyExpectation) Then(err error) *UseCaseMock {
-	e.results = &UseCaseMockGetCompanyResults{err}
+func (e *UseCaseMockGetCompanyExpectation) Then(ba1 []byte, err error) *UseCaseMock {
+	e.results = &UseCaseMockGetCompanyResults{ba1, err}
 	return e.mock
 }
 
 // GetCompany implements UseCase
-func (mmGetCompany *UseCaseMock) GetCompany(message []byte) (err error) {
+func (mmGetCompany *UseCaseMock) GetCompany(message []byte) (ba1 []byte, err error) {
 	mm_atomic.AddUint64(&mmGetCompany.beforeGetCompanyCounter, 1)
 	defer mm_atomic.AddUint64(&mmGetCompany.afterGetCompanyCounter, 1)
 
@@ -618,7 +621,7 @@ func (mmGetCompany *UseCaseMock) GetCompany(message []byte) (err error) {
 	for _, e := range mmGetCompany.GetCompanyMock.expectations {
 		if minimock.Equal(e.params, mm_params) {
 			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.err
+			return e.results.ba1, e.results.err
 		}
 	}
 
@@ -634,7 +637,7 @@ func (mmGetCompany *UseCaseMock) GetCompany(message []byte) (err error) {
 		if mm_results == nil {
 			mmGetCompany.t.Fatal("No results are set for the UseCaseMock.GetCompany")
 		}
-		return (*mm_results).err
+		return (*mm_results).ba1, (*mm_results).err
 	}
 	if mmGetCompany.funcGetCompany != nil {
 		return mmGetCompany.funcGetCompany(message)
@@ -732,6 +735,7 @@ type UseCaseMockUpdateCompanyParams struct {
 
 // UseCaseMockUpdateCompanyResults contains results of the UseCase.UpdateCompany
 type UseCaseMockUpdateCompanyResults struct {
+	ba1 []byte
 	err error
 }
 
@@ -767,7 +771,7 @@ func (mmUpdateCompany *mUseCaseMockUpdateCompany) Inspect(f func(message []byte)
 }
 
 // Return sets up results that will be returned by UseCase.UpdateCompany
-func (mmUpdateCompany *mUseCaseMockUpdateCompany) Return(err error) *UseCaseMock {
+func (mmUpdateCompany *mUseCaseMockUpdateCompany) Return(ba1 []byte, err error) *UseCaseMock {
 	if mmUpdateCompany.mock.funcUpdateCompany != nil {
 		mmUpdateCompany.mock.t.Fatalf("UseCaseMock.UpdateCompany mock is already set by Set")
 	}
@@ -775,12 +779,12 @@ func (mmUpdateCompany *mUseCaseMockUpdateCompany) Return(err error) *UseCaseMock
 	if mmUpdateCompany.defaultExpectation == nil {
 		mmUpdateCompany.defaultExpectation = &UseCaseMockUpdateCompanyExpectation{mock: mmUpdateCompany.mock}
 	}
-	mmUpdateCompany.defaultExpectation.results = &UseCaseMockUpdateCompanyResults{err}
+	mmUpdateCompany.defaultExpectation.results = &UseCaseMockUpdateCompanyResults{ba1, err}
 	return mmUpdateCompany.mock
 }
 
 //Set uses given function f to mock the UseCase.UpdateCompany method
-func (mmUpdateCompany *mUseCaseMockUpdateCompany) Set(f func(message []byte) (err error)) *UseCaseMock {
+func (mmUpdateCompany *mUseCaseMockUpdateCompany) Set(f func(message []byte) (ba1 []byte, err error)) *UseCaseMock {
 	if mmUpdateCompany.defaultExpectation != nil {
 		mmUpdateCompany.mock.t.Fatalf("Default expectation is already set for the UseCase.UpdateCompany method")
 	}
@@ -809,13 +813,13 @@ func (mmUpdateCompany *mUseCaseMockUpdateCompany) When(message []byte) *UseCaseM
 }
 
 // Then sets up UseCase.UpdateCompany return parameters for the expectation previously defined by the When method
-func (e *UseCaseMockUpdateCompanyExpectation) Then(err error) *UseCaseMock {
-	e.results = &UseCaseMockUpdateCompanyResults{err}
+func (e *UseCaseMockUpdateCompanyExpectation) Then(ba1 []byte, err error) *UseCaseMock {
+	e.results = &UseCaseMockUpdateCompanyResults{ba1, err}
 	return e.mock
 }
 
 // UpdateCompany implements UseCase
-func (mmUpdateCompany *UseCaseMock) UpdateCompany(message []byte) (err error) {
+func (mmUpdateCompany *UseCaseMock) UpdateCompany(message []byte) (ba1 []byte, err error) {
 	mm_atomic.AddUint64(&mmUpdateCompany.beforeUpdateCompanyCounter, 1)
 	defer mm_atomic.AddUint64(&mmUpdateCompany.afterUpdateCompanyCounter, 1)
 
@@ -833,7 +837,7 @@ func (mmUpdateCompany *UseCaseMock) UpdateCompany(message []byte) (err error) {
 	for _, e := range mmUpdateCompany.UpdateCompanyMock.expectations {
 		if minimock.Equal(e.params, mm_params) {
 			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.err
+			return e.results.ba1, e.results.err
 		}
 	}
 
@@ -849,7 +853,7 @@ func (mmUpdateCompany *UseCaseMock) UpdateCompany(message []byte) (err error) {
 		if mm_results == nil {
 			mmUpdateCompany.t.Fatal("No results are set for the UseCaseMock.UpdateCompany")
 		}
-		return (*mm_results).err
+		return (*mm_results).ba1, (*mm_results).err
 	}
 	if mmUpdateCompany.funcUpdateCompany != nil {
 		return mmUpdateCompany.funcUpdateCompany(message)

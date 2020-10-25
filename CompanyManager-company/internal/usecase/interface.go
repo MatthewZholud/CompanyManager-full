@@ -22,10 +22,12 @@ type Repository interface {
 }
 
 type UseCase interface {
-	GetCompany(message []byte) error
+	GetCompany(message []byte) ([]byte, error)
 	//SearchBooks(query string) ([]*entity.Book, error)
 	//ListBooks() ([]*entity.Book, error)
-	CreateCompany(message []byte) error
-	UpdateCompany(message []byte) error
-	DeleteCompany(message []byte) error
+	CreateCompany(message []byte) ([]byte, error)
+	UpdateCompany(message []byte) ([]byte, error)
+	DeleteCompany(message []byte) ([]byte, error)
 }
+
+

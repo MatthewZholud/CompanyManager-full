@@ -1,15 +1,15 @@
 package usecase
 
 import (
+	"encoding/json"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/entity/company"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/logger"
-
-	"encoding/json"
 	"strconv"
 )
 
 func StringToInt64(message string) (int64, error) {
 	id, err := strconv.Atoi(message)
+
 	if err != nil {
 		logger.Log.Debug("Can't convert String to int64")
 		return 0, err

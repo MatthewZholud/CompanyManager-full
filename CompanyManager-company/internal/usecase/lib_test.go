@@ -3,6 +3,7 @@ package usecase
 import (
 	"encoding/json"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/entity/company"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/logger"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -30,6 +31,9 @@ type fakeCompany struct {
 }
 
 var _ = Describe("Usecase", func() {
+	BeforeSuite(func() {
+		logger.InitLog()
+	})
 	Describe("StringToInt64", func() {
 		It("Should return an error and zero if can't do Atoi conversion", func() {
 			got, err := StringToInt64("c")
