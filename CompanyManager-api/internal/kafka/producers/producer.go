@@ -2,8 +2,11 @@ package producers
 
 import (
 	"context"
+	"fmt"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/logger"
+	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
+	"os"
 	"strings"
 	"time"
 )
@@ -11,27 +14,29 @@ import (
 func getKafkaWriter(kafkaURL, topic string) *kafka.Writer {
 	brokers := strings.Split(kafkaURL, ",")
 	return kafka.NewWriter(kafka.WriterConfig{
-		Brokers:  brokers,
-		Topic:    topic,
-		Balancer: &kafka.LeastBytes{},
+		Brokers:      brokers,
+		Topic:        topic,
+		Balancer:     &kafka.LeastBytes{},
 		BatchTimeout: 10 * time.Millisecond,
 	})
 }
 
-func KafkaSend(str []byte, topic string) error {
-	writer := getKafkaWriter("kafka:9092", topic)
+func KafkaSend(str []byte, topic string) ([]byte, error) {
+	writer := getKafkaWriter(os.Getenv("KAFKA_BROKERS"), topic)
 	defer writer.Close()
 	logger.Log.Infof("Ready to send message to kafka")
+	currentUUID := uuid.New()
+	byteUUID := []byte(fmt.Sprintf("%s", currentUUID))
 	err := writer.WriteMessages(context.Background(),
 		kafka.Message{
-			Value: str })
+			Key:   byteUUID,
+			Value: str,
+		})
 	if err != nil {
 		logger.Log.Debugf("Error sending message to kafka, topic: %v", topic)
-		return err
+		return nil, err
 	} else {
 		logger.Log.Infof("Sent message to kafka, topic: %v", topic)
-		return nil
+		return byteUUID, nil
 	}
 }
-
-

@@ -1,4 +1,4 @@
-package company
+package entity
 
 //
 //type ID = uuid.UUID
@@ -26,3 +26,8 @@ type Company struct {
 //	}
 //	return comp
 //}
+
+type Message struct {
+	Key []byte
+	Value []byte
+}
