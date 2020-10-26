@@ -2,6 +2,7 @@ package consumers
 
 import (
 	"context"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/entity"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/logger"
 	"github.com/segmentio/kafka-go"
 	"strings"
@@ -18,7 +19,7 @@ func getKafkaReader(kafkaURL, topic string) *kafka.Reader {
 	})
 }
 
-func KafkaConsumer(topic, brokers string, ch chan []byte) []byte {
+func KafkaConsumer(topic, brokers string, ch chan entity.Message) []byte {
 
 	reader := getKafkaReader(brokers, topic)
 	reader.SetOffset(kafka.LastOffset)
@@ -31,9 +32,12 @@ func KafkaConsumer(topic, brokers string, ch chan []byte) []byte {
 		if err != nil {
 			logger.Log.Fatalf("Can't read messages from Kafka with topic %v: %v", topic, err)
 		} else {
-			logger.Log.Infof("Got message from kafka, topic: %v", topic)
+			logger.Log.Infof("Got message from env, topic: %v", topic)
 		}
-		ch <- m.Value
+		ch <- entity.Message{
+			Key: m.Key,
+			Value: m.Value,
+		}
 	}
 	return nil
 }

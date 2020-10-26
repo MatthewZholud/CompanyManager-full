@@ -6,7 +6,7 @@ import (
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/logger"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/profiling"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/usecase"
-	//"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/domain/kafka/producers"
+	//"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/domain/env/producers"
 
 	"os"
 

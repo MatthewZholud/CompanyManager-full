@@ -2,7 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/entity/company"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/entity"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/logger"
 )
 
@@ -17,8 +17,8 @@ func NewPostgresRepository(db *sql.DB) *postgresRepo {
 }
 
 
-func (s *postgresRepo) Get(id int64) (*company.Company, error) {
-	var company company.Company
+func (s *postgresRepo) Get(id int64) (*entity.Company, error) {
+	var company entity.Company
 	rows, err := s.db.Query("SELECT * from company WHERE company_id = $1", id)
 	if err != nil {
 		logger.Log.Debug("Get query to Db was failed")
@@ -32,7 +32,7 @@ func (s *postgresRepo) Get(id int64) (*company.Company, error) {
 	return &company, nil
 }
 
-func (s *postgresRepo) Create(c *company.Company) (string, error) {
+func (s *postgresRepo) Create(c *entity.Company) (string, error) {
 	var compId string
 	err := s.db.QueryRow("INSERT INTO company(name, legal_form) VALUES ($1, $2) RETURNING company_id", c.Name, c.Legalform).Scan(&compId)
 	if err != nil {
@@ -52,7 +52,7 @@ func (s *postgresRepo) Delete(id int64) (string, error) {
 	return companyReply, nil
 }
 
-func (s *postgresRepo) Update(c *company.Company) (string, error) {
+func (s *postgresRepo) Update(c *entity.Company) (string, error) {
 	_, err := s.db.Exec("UPDATE company set name = $1, legal_form = $2 where company_id = $3;", c.Name, c.Legalform, c.ID)
 	if err != nil {
 		logger.Log.Debug("Update query to Db was failed")

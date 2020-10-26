@@ -1,4 +1,4 @@
-package employee
+package entity
 
 //type ID = uuid.UUID
 //
@@ -23,16 +23,21 @@ type Employee struct {
 }
 
 
-func NewEmployee(name, secondName, surname, photoURL, hireDate, position string, id, companyID int64) *Employee {
-	empl := &Employee{
-		ID: id,
-		Name:     name,
-		SecondName:    secondName,
-		Surname:     surname,
-		PhotoUrl:  photoURL,
-		HireDate: hireDate,
-		Position:  position,
-		CompanyID: companyID,
-	}
-	return empl
+//func NewEmployee(name, secondName, surname, photoURL, hireDate, position string, id, companyID int64) *Employee {
+//	empl := &Employee{
+//		ID: id,
+//		Name:     name,
+//		SecondName:    secondName,
+//		Surname:     surname,
+//		PhotoUrl:  photoURL,
+//		HireDate: hireDate,
+//		Position:  position,
+//		CompanyID: companyID,
+//	}
+//	return empl
+//}
+
+type Message struct {
+	Key []byte
+	Value []byte
 }

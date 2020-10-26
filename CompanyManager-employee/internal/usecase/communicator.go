@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/entity"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/kafka/consumers"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/kafka/producers"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/logger"
@@ -22,11 +23,11 @@ const (
 
 func StartKafkaCommunication(service *Service) {
 
-	EmployeeGETRequestChan := make(chan []byte)
-	EmployeePOSTRequestChan := make(chan []byte)
-	EmployeePUTRequestChan := make(chan []byte)
-	EmployeeDeleteRequestChan := make(chan []byte)
-	EmployeeByCompanyGETRequestChan := make(chan []byte)
+	EmployeeGETRequestChan := make(chan entity.Message)
+	EmployeePOSTRequestChan := make(chan entity.Message)
+	EmployeePUTRequestChan := make(chan entity.Message)
+	EmployeeDeleteRequestChan := make(chan entity.Message)
+	EmployeeByCompanyGETRequestChan := make(chan entity.Message)
 
 	broker := os.Getenv("KAFKA_BROKERS")
 
@@ -40,48 +41,48 @@ func StartKafkaCommunication(service *Service) {
 	for {
 		select {
 		case message := <-EmployeeGETRequestChan:
-			response, err := service.GetEmployee(message)
+			response, err := service.GetEmployee(message.Value)
 			if err != nil {
-				logger.Log.Fatal("Can't get company", err)
+				logger.Log.Errorf("Can't get company", err)
 			} else {
 				logger.Log.Info("Get request completed")
 			}
-			producers.KafkaSend(response, EmployeeGETResponse)
+			producers.KafkaSend(response, message.Key, EmployeeGETResponse)
 
 		case message := <-EmployeePOSTRequestChan:
-			response, err := service.CreateEmployee(message)
+			response, err := service.CreateEmployee(message.Value)
 			if err != nil {
-				logger.Log.Fatal("Can't create company:", err)
+				logger.Log.Errorf("Can't create company:", err)
 			} else {
 				logger.Log.Info("Create request completed")
 			}
-			producers.KafkaSend(response, EmployeePOSTResponse)
+			producers.KafkaSend(response, message.Key, EmployeePOSTResponse)
 
 		case message := <-EmployeePUTRequestChan:
-			response, err := service.UpdateEmployee(message)
+			response, err := service.UpdateEmployee(message.Value)
 			if err != nil {
-				logger.Log.Fatal("Can't update company:", err)
+				logger.Log.Errorf("Can't update company:", err)
 			} else {
 				logger.Log.Info("Update request completed")
 			}
-			producers.KafkaSend(response, EmployeePUTResponse)
+			producers.KafkaSend(response, message.Key, EmployeePUTResponse)
 
 		case message := <-EmployeeDeleteRequestChan:
-			response, err := service.DeleteEmployee(message)
+			response, err := service.DeleteEmployee(message.Value)
 			if err != nil {
-				logger.Log.Fatal("Can't delete company:", err)
+				logger.Log.Errorf("Can't delete company:", err)
 			} else {
 				logger.Log.Info("Delete request completed")
 			}
-			producers.KafkaSend(response, EmployeeDeleteResponse)
+			producers.KafkaSend(response, message.Key, EmployeeDeleteResponse)
 		case message := <-EmployeeByCompanyGETRequestChan:
-			response, err := service.GetEmployeeByCompany(message)
+			response, err := service.GetEmployeeByCompany(message.Value)
 			if err != nil {
-				logger.Log.Fatal("Can't get employee by company:", err)
+				logger.Log.Errorf("Can't get employee by company:", err)
 			} else {
 				logger.Log.Info("Get(employee by company) request completed")
 			}
-			producers.KafkaSend(response, EmployeeByCompanyGETResponse)
+			producers.KafkaSend(response, message.Key, EmployeeByCompanyGETResponse)
 		}
 	}
 }

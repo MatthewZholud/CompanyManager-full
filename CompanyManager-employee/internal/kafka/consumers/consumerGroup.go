@@ -3,14 +3,14 @@ package consumers
 //import (
 //	"context"
 //	"fmt"
-//	"github.com/segmentio/kafka-go"
+//	"github.com/segmentio/env-go"
 //	"os"
 //)
 //
 //func ExampleConsumerGroupParallelReaders() {
-//	group, err := kafka.NewConsumerGroup(kafka.ConsumerGroupConfig{
+//	group, err := env.NewConsumerGroup(env.ConsumerGroupConfig{
 //		ID:      "my-group",
-//		Brokers: []string{"kafka:9092"},
+//		Brokers: []string{"env:9092"},
 //		Topics:  []string{"getCompany", "getEmployee"},
 //	})
 //	if err != nil {
@@ -29,27 +29,27 @@ package consumers
 //		}
 //		fmt.Println()
 //			gen.Start(func(ctx context.Context) {
-//				reader := kafka.NewReader(kafka.ReaderConfig{
-//					Brokers:   []string{"kafka:9092"},
+//				reader := env.NewReader(env.ReaderConfig{
+//					Brokers:   []string{"env:9092"},
 //					Topic:     "getEmployee",
 //					Partition: 0,
 //				})
-//				reader.SetOffset(kafka.LastOffset)
+//				reader.SetOffset(env.LastOffset)
 //				defer reader.Close()
 //
 //
-//				reader1 := kafka.NewReader(kafka.ReaderConfig{
-//					Brokers:   []string{"kafka:9092"},
+//				reader1 := env.NewReader(env.ReaderConfig{
+//					Brokers:   []string{"env:9092"},
 //					Topic:     "getCompany",
 //					Partition: 0,
 //				})
-//				reader1.SetOffset(kafka.LastOffset)
+//				reader1.SetOffset(env.LastOffset)
 //				defer reader1.Close()
 //
 //				for {
 //					msg, err := reader.ReadMessage(ctx)
 //					switch err {
-//					case kafka.ErrGenerationEnded:
+//					case env.ErrGenerationEnded:
 //						return
 //					case nil:
 //						fmt.Printf("received message %s/%d/%d : %s\n", msg.Topic, msg.Partition, msg.Offset, string(msg.Value))

@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"encoding/json"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/entity/company"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/entity"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/logger"
 	"testing"
 
@@ -16,8 +16,8 @@ func TestCart(t *testing.T) {
 
 }
 
-func newFixtureCompany1() *company.Company {
-	return &company.Company{
+func newFixtureCompany1() *entity.Company {
+	return &entity.Company{
 		ID:        1,
 		Name:      "Mega",
 		Legalform: "OOO",

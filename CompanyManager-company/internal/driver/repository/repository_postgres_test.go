@@ -3,7 +3,7 @@ package repository
 import (
 	"database/sql"
 	"fmt"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/entity/company"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/entity"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/usecase"
 	"testing"
 
@@ -23,7 +23,7 @@ var _ = Describe("Repository", func() {
 	var (
 		//db sql.DB
 		conn *postgresRepo
-		c *company.Company
+		c *entity.Company
 	)
 
 
@@ -33,7 +33,7 @@ var _ = Describe("Repository", func() {
 		db, _ := sql.Open("postgres", PsqlInfo)
 		db.Ping()
 		conn = NewPostgresRepository(db)
-		c = &company.Company{}
+		c = &entity.Company{}
 	})
 
 	Context("Get", func() {

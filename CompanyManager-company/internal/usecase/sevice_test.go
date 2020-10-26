@@ -3,14 +3,12 @@ package usecase
 import (
 	"encoding/json"
 	"errors"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/entity/company"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/entity"
 	"github.com/gojuno/minimock/v3"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-
 	. "github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/usecase/mock"
-
 )
 
 var _ = Describe("Service", func() {
@@ -20,7 +18,7 @@ var _ = Describe("Service", func() {
 		rep     *RepositoryMock
 		useCase *UseCaseMock
 		service *Service
-		comp1   = &company.Company{}
+		comp1   = &entity.Company{}
 		er      = errors.New("new error")
 	)
 

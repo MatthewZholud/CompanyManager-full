@@ -5,11 +5,11 @@ package mock
 //go:generate minimock -i github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/usecase.Repository -o ./repository_mock_test.go
 
 import (
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/entity"
 	"sync"
 	mm_atomic "sync/atomic"
 	mm_time "time"
 
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/entity/company"
 	"github.com/gojuno/minimock/v3"
 )
 
@@ -17,8 +17,8 @@ import (
 type RepositoryMock struct {
 	t minimock.Tester
 
-	funcCreate          func(e *company.Company) (s1 string, err error)
-	inspectFuncCreate   func(e *company.Company)
+	funcCreate          func(e *entity.Company) (s1 string, err error)
+	inspectFuncCreate   func(e *entity.Company)
 	afterCreateCounter  uint64
 	beforeCreateCounter uint64
 	CreateMock          mRepositoryMockCreate
@@ -29,14 +29,14 @@ type RepositoryMock struct {
 	beforeDeleteCounter uint64
 	DeleteMock          mRepositoryMockDelete
 
-	funcGet          func(id int64) (cp1 *company.Company, err error)
+	funcGet          func(id int64) (cp1 *entity.Company, err error)
 	inspectFuncGet   func(id int64)
 	afterGetCounter  uint64
 	beforeGetCounter uint64
 	GetMock          mRepositoryMockGet
 
-	funcUpdate          func(e *company.Company) (s1 string, err error)
-	inspectFuncUpdate   func(e *company.Company)
+	funcUpdate          func(e *entity.Company) (s1 string, err error)
+	inspectFuncUpdate   func(e *entity.Company)
 	afterUpdateCounter  uint64
 	beforeUpdateCounter uint64
 	UpdateMock          mRepositoryMockUpdate
@@ -83,7 +83,7 @@ type RepositoryMockCreateExpectation struct {
 
 // RepositoryMockCreateParams contains parameters of the Repository.Create
 type RepositoryMockCreateParams struct {
-	e *company.Company
+	e *entity.Company
 }
 
 // RepositoryMockCreateResults contains results of the Repository.Create
@@ -93,7 +93,7 @@ type RepositoryMockCreateResults struct {
 }
 
 // Expect sets up expected params for Repository.Create
-func (mmCreate *mRepositoryMockCreate) Expect(e *company.Company) *mRepositoryMockCreate {
+func (mmCreate *mRepositoryMockCreate) Expect(e *entity.Company) *mRepositoryMockCreate {
 	if mmCreate.mock.funcCreate != nil {
 		mmCreate.mock.t.Fatalf("RepositoryMock.Create mock is already set by Set")
 	}
@@ -113,7 +113,7 @@ func (mmCreate *mRepositoryMockCreate) Expect(e *company.Company) *mRepositoryMo
 }
 
 // Inspect accepts an inspector function that has same arguments as the Repository.Create
-func (mmCreate *mRepositoryMockCreate) Inspect(f func(e *company.Company)) *mRepositoryMockCreate {
+func (mmCreate *mRepositoryMockCreate) Inspect(f func(e *entity.Company)) *mRepositoryMockCreate {
 	if mmCreate.mock.inspectFuncCreate != nil {
 		mmCreate.mock.t.Fatalf("Inspect function is already set for RepositoryMock.Create")
 	}
@@ -137,7 +137,7 @@ func (mmCreate *mRepositoryMockCreate) Return(s1 string, err error) *RepositoryM
 }
 
 //Set uses given function f to mock the Repository.Create method
-func (mmCreate *mRepositoryMockCreate) Set(f func(e *company.Company) (s1 string, err error)) *RepositoryMock {
+func (mmCreate *mRepositoryMockCreate) Set(f func(e *entity.Company) (s1 string, err error)) *RepositoryMock {
 	if mmCreate.defaultExpectation != nil {
 		mmCreate.mock.t.Fatalf("Default expectation is already set for the Repository.Create method")
 	}
@@ -152,7 +152,7 @@ func (mmCreate *mRepositoryMockCreate) Set(f func(e *company.Company) (s1 string
 
 // When sets expectation for the Repository.Create which will trigger the result defined by the following
 // Then helper
-func (mmCreate *mRepositoryMockCreate) When(e *company.Company) *RepositoryMockCreateExpectation {
+func (mmCreate *mRepositoryMockCreate) When(e *entity.Company) *RepositoryMockCreateExpectation {
 	if mmCreate.mock.funcCreate != nil {
 		mmCreate.mock.t.Fatalf("RepositoryMock.Create mock is already set by Set")
 	}
@@ -172,7 +172,7 @@ func (e *RepositoryMockCreateExpectation) Then(s1 string, err error) *Repository
 }
 
 // Create implements Repository
-func (mmCreate *RepositoryMock) Create(e *company.Company) (s1 string, err error) {
+func (mmCreate *RepositoryMock) Create(e *entity.Company) (s1 string, err error) {
 	mm_atomic.AddUint64(&mmCreate.beforeCreateCounter, 1)
 	defer mm_atomic.AddUint64(&mmCreate.afterCreateCounter, 1)
 
@@ -520,7 +520,7 @@ type RepositoryMockGetParams struct {
 
 // RepositoryMockGetResults contains results of the Repository.Get
 type RepositoryMockGetResults struct {
-	cp1 *company.Company
+	cp1 *entity.Company
 	err error
 }
 
@@ -556,7 +556,7 @@ func (mmGet *mRepositoryMockGet) Inspect(f func(id int64)) *mRepositoryMockGet {
 }
 
 // Return sets up results that will be returned by Repository.Get
-func (mmGet *mRepositoryMockGet) Return(cp1 *company.Company, err error) *RepositoryMock {
+func (mmGet *mRepositoryMockGet) Return(cp1 *entity.Company, err error) *RepositoryMock {
 	if mmGet.mock.funcGet != nil {
 		mmGet.mock.t.Fatalf("RepositoryMock.Get mock is already set by Set")
 	}
@@ -569,7 +569,7 @@ func (mmGet *mRepositoryMockGet) Return(cp1 *company.Company, err error) *Reposi
 }
 
 //Set uses given function f to mock the Repository.Get method
-func (mmGet *mRepositoryMockGet) Set(f func(id int64) (cp1 *company.Company, err error)) *RepositoryMock {
+func (mmGet *mRepositoryMockGet) Set(f func(id int64) (cp1 *entity.Company, err error)) *RepositoryMock {
 	if mmGet.defaultExpectation != nil {
 		mmGet.mock.t.Fatalf("Default expectation is already set for the Repository.Get method")
 	}
@@ -598,13 +598,13 @@ func (mmGet *mRepositoryMockGet) When(id int64) *RepositoryMockGetExpectation {
 }
 
 // Then sets up Repository.Get return parameters for the expectation previously defined by the When method
-func (e *RepositoryMockGetExpectation) Then(cp1 *company.Company, err error) *RepositoryMock {
+func (e *RepositoryMockGetExpectation) Then(cp1 *entity.Company, err error) *RepositoryMock {
 	e.results = &RepositoryMockGetResults{cp1, err}
 	return e.mock
 }
 
 // Get implements Repository
-func (mmGet *RepositoryMock) Get(id int64) (cp1 *company.Company, err error) {
+func (mmGet *RepositoryMock) Get(id int64) (cp1 *entity.Company, err error) {
 	mm_atomic.AddUint64(&mmGet.beforeGetCounter, 1)
 	defer mm_atomic.AddUint64(&mmGet.afterGetCounter, 1)
 
@@ -731,7 +731,7 @@ type RepositoryMockUpdateExpectation struct {
 
 // RepositoryMockUpdateParams contains parameters of the Repository.Update
 type RepositoryMockUpdateParams struct {
-	e *company.Company
+	e *entity.Company
 }
 
 // RepositoryMockUpdateResults contains results of the Repository.Update
@@ -741,7 +741,7 @@ type RepositoryMockUpdateResults struct {
 }
 
 // Expect sets up expected params for Repository.Update
-func (mmUpdate *mRepositoryMockUpdate) Expect(e *company.Company) *mRepositoryMockUpdate {
+func (mmUpdate *mRepositoryMockUpdate) Expect(e *entity.Company) *mRepositoryMockUpdate {
 	if mmUpdate.mock.funcUpdate != nil {
 		mmUpdate.mock.t.Fatalf("RepositoryMock.Update mock is already set by Set")
 	}
@@ -761,7 +761,7 @@ func (mmUpdate *mRepositoryMockUpdate) Expect(e *company.Company) *mRepositoryMo
 }
 
 // Inspect accepts an inspector function that has same arguments as the Repository.Update
-func (mmUpdate *mRepositoryMockUpdate) Inspect(f func(e *company.Company)) *mRepositoryMockUpdate {
+func (mmUpdate *mRepositoryMockUpdate) Inspect(f func(e *entity.Company)) *mRepositoryMockUpdate {
 	if mmUpdate.mock.inspectFuncUpdate != nil {
 		mmUpdate.mock.t.Fatalf("Inspect function is already set for RepositoryMock.Update")
 	}
@@ -785,7 +785,7 @@ func (mmUpdate *mRepositoryMockUpdate) Return(s1 string, err error) *RepositoryM
 }
 
 //Set uses given function f to mock the Repository.Update method
-func (mmUpdate *mRepositoryMockUpdate) Set(f func(e *company.Company) (s1 string, err error)) *RepositoryMock {
+func (mmUpdate *mRepositoryMockUpdate) Set(f func(e *entity.Company) (s1 string, err error)) *RepositoryMock {
 	if mmUpdate.defaultExpectation != nil {
 		mmUpdate.mock.t.Fatalf("Default expectation is already set for the Repository.Update method")
 	}
@@ -800,7 +800,7 @@ func (mmUpdate *mRepositoryMockUpdate) Set(f func(e *company.Company) (s1 string
 
 // When sets expectation for the Repository.Update which will trigger the result defined by the following
 // Then helper
-func (mmUpdate *mRepositoryMockUpdate) When(e *company.Company) *RepositoryMockUpdateExpectation {
+func (mmUpdate *mRepositoryMockUpdate) When(e *entity.Company) *RepositoryMockUpdateExpectation {
 	if mmUpdate.mock.funcUpdate != nil {
 		mmUpdate.mock.t.Fatalf("RepositoryMock.Update mock is already set by Set")
 	}
@@ -820,7 +820,7 @@ func (e *RepositoryMockUpdateExpectation) Then(s1 string, err error) *Repository
 }
 
 // Update implements Repository
-func (mmUpdate *RepositoryMock) Update(e *company.Company) (s1 string, err error) {
+func (mmUpdate *RepositoryMock) Update(e *entity.Company) (s1 string, err error) {
 	mm_atomic.AddUint64(&mmUpdate.beforeUpdateCounter, 1)
 	defer mm_atomic.AddUint64(&mmUpdate.afterUpdateCounter, 1)
 

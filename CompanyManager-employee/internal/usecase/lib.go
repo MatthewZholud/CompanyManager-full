@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"encoding/json"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/entity/employee"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/entity"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/logger"
 	"strconv"
 )
@@ -16,8 +16,8 @@ func StringToInt64(message string) (int64, error) {
 	return int64(id), nil
 }
 
-func JsonToCompany(msg []byte) (*employee.Employee, error) {
-	employee := employee.Employee{}
+func JsonToCompany(msg []byte) (*entity.Employee, error) {
+	employee := entity.Employee{}
 	err := json.Unmarshal(msg, &employee)
 	if err != nil {
 		logger.Log.Debug("Can't convert Json to employee struct")

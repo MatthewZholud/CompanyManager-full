@@ -1,15 +1,17 @@
 package usecase
 
-import "github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/entity/employee"
+import (
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/entity"
+)
 
 type Reader interface {
-	Get(id int64) (*employee.Employee, error)
-	GetEmployeesByCompany(id int64) (*[]employee.Employee, error)
+	Get(id int64) (*entity.Employee, error)
+	GetEmployeesByCompany(id int64) (*[]entity.Employee, error)
 }
 
 type Writer interface {
-	Create(e *employee.Employee) (string, error)
-	Update(e *employee.Employee) (string, error)
+	Create(e *entity.Employee) (string, error)
+	Update(e *entity.Employee) (string, error)
 	Delete(id int64) (string, error)
 }
 
