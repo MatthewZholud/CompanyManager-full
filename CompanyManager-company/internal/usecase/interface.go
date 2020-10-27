@@ -17,6 +17,8 @@ import (
 //repository interface
 type Repository interface {
 	Get(id int64) (*entity.Company, error)
+	GetAll() (*[]entity.Company, error)
+
 
 	Create(e *entity.Company) (string, error)
 	Update(e *entity.Company) (string, error)
@@ -25,8 +27,10 @@ type Repository interface {
 
 type UseCase interface {
 	GetCompany(message []byte) ([]byte, error)
-	//SearchBooks(query string) ([]*entity.Book, error)
-	//ListBooks() ([]*entity.Book, error)
+	GetAllCompany() ([]byte, error)
+
+	//SearchBooks(query string) ([]*presenter.Book, error)
+	//ListBooks() ([]*presenter.Book, error)
 	CreateCompany(message []byte) ([]byte, error)
 	UpdateCompany(message []byte) ([]byte, error)
 	DeleteCompany(message []byte) ([]byte, error)

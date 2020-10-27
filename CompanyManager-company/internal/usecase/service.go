@@ -30,6 +30,17 @@ func (s *Service) GetCompany(message []byte) ([]byte, error) {
 	return c, nil
 }
 
+func (s *Service) GetAllCompany() ([]byte, error) {
+	companies, err := s.repo.GetAll()
+	if err != nil {
+		return nil, err
+	} else {
+		logger.Log.Info("Working with database by GET request was successful")
+	}
+	c, _ := json.Marshal(companies)
+	return c, nil
+}
+
 func (s *Service) CreateCompany(message []byte) ([]byte, error) {
 	comp, err := JsonToCompany(message)
 	if err != nil {

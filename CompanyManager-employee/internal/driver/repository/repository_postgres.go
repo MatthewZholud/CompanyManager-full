@@ -77,7 +77,6 @@ func (s *postgresRepo) GetEmployeesByCompany(id int64) (*[]entity.Employee, erro
 
 	for rows.Next() {
 		employee := entity.Employee{}
-
 		if err := rows.Scan(&employee.ID, &employee.Name, &employee.SecondName, &employee.Surname,
 			&employee.PhotoUrl, &employee.HireDate, &employee.Position, &employee.CompanyID); err != nil {
 			return nil, err

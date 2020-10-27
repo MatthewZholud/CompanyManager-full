@@ -10,10 +10,12 @@ import (
 
 const (
 	CompanyGETRequest     = "CompanyGETRequest"
+	CompanyGETAllRequest = "CompanyGETAllRequest"
 	CompanyPOSTRequest    = "CompanyPOSTRequest"
 	CompanyPUTRequest     = "CompanyPUTRequest"
 	CompanyDeleteRequest  = "CompanyDeleteRequest"
 	CompanyGETResponse    = "CompanyGETResponse"
+	CompanyGETAllResponse = "CompanyGETAllResponse"
 	CompanyPOSTResponse   = "CompanyPOSTResponse"
 	CompanyPUTResponse    = "CompanyPUTResponse"
 	CompanyDeleteResponse = "CompanyDeleteResponse"
@@ -24,6 +26,7 @@ const (
 func StartKafkaCommunication(service *Service) {
 
 	CompanyGETRequestChan := make(chan entity.Message)
+	CompanyGETAllRequestChan := make(chan entity.Message)
 	CompanyPOSTRequestChan := make(chan entity.Message)
 	CompanyPUTRequestChan := make(chan entity.Message)
 	CompanyDeleteRequestChan := make(chan entity.Message)
@@ -31,9 +34,11 @@ func StartKafkaCommunication(service *Service) {
 	broker := os.Getenv("KAFKA_BROKERS")
 
 	go consumers.KafkaConsumer(CompanyGETRequest, broker, CompanyGETRequestChan)
+	go consumers.KafkaConsumer(CompanyGETAllRequest, broker, CompanyGETAllRequestChan)
 	go consumers.KafkaConsumer(CompanyPOSTRequest, broker, CompanyPOSTRequestChan)
 	go consumers.KafkaConsumer(CompanyPUTRequest, broker, CompanyPUTRequestChan)
 	go consumers.KafkaConsumer(CompanyDeleteRequest, broker, CompanyDeleteRequestChan)
+
 
 	for {
 		select {
@@ -45,6 +50,15 @@ func StartKafkaCommunication(service *Service) {
 				logger.Log.Info("Get request completed")
 			}
 			producers.KafkaSend(response, message.Key, CompanyGETResponse)
+
+		case message := <-CompanyGETAllRequestChan:
+			response, err := service.GetAllCompany()
+			if err != nil {
+				logger.Log.Errorf("Can't get all companies", err)
+			} else {
+				logger.Log.Info("Get all request completed")
+			}
+			producers.KafkaSend(response, message.Key, CompanyGETAllResponse)
 
 		case message := <-CompanyPOSTRequestChan:
 			response, err := service.CreateCompany(message.Value)

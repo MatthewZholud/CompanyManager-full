@@ -32,6 +32,23 @@ func (s *postgresRepo) Get(id int64) (*entity.Company, error) {
 	return &company, nil
 }
 
+func (s *postgresRepo) GetAll() (*[]entity.Company, error) {
+	rows, err := s.db.Query("SELECT * from company")
+	if err != nil {
+		logger.Log.Debug("Get all query to Db was failed")
+		return nil, err
+	}
+	defer rows.Close()
+	companies := []entity.Company{}
+
+	for rows.Next() {
+		company := entity.Company{}
+		rows.Scan(&company.ID, &company.Name, &company.Legalform)
+		companies = append(companies, company)
+	}
+	return &companies, nil
+}
+
 func (s *postgresRepo) Create(c *entity.Company) (string, error) {
 	var compId string
 	err := s.db.QueryRow("INSERT INTO company(name, legal_form) VALUES ($1, $2) RETURNING company_id", c.Name, c.Legalform).Scan(&compId)

@@ -4,8 +4,8 @@ import "errors"
 //ErrNotFound not found
 var ErrNotFound = errors.New("Not found")
 
-//ErrInvalidEntity invalid entity
-var ErrInvalidEntity = errors.New("Invalid entity")
+//ErrInvalidEntity invalid presenter
+var ErrInvalidEntity = errors.New("Invalid presenter")
 
 //ErrCannotBeDeleted cannot be deleted
 var ErrCannotBeDeleted = errors.New("Cannot Be Deleted")
