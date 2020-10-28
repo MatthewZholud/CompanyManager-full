@@ -23,11 +23,25 @@ func (s *Service) GetEmployee(message []byte) ([]byte, error) {
 	employee, err := s.repo.Get(id)
 	if err != nil {
 		return nil, err
+	} else if employee.ID==0{
+		logger.Log.Info("Employee not found")
+		return []byte("Employee not found"), nil
 	} else {
 		logger.Log.Info("Working with database by GET request was successful")
 	}
 	e, _ := json.Marshal(employee)
 	return e, nil
+}
+
+func (s *Service) GetAllEmployee() ([]byte, error) {
+	employees, err := s.repo.GetAll()
+	if err != nil {
+		return nil, err
+	} else {
+		logger.Log.Info("Working with database by GET all request was successful")
+	}
+	c, _ := json.Marshal(employees)
+	return c, nil
 }
 
 func (s *Service) CreateEmployee(message []byte) ([]byte, error){

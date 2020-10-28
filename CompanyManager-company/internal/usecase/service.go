@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/logger"
 )
 
@@ -23,9 +24,15 @@ func (s *Service) GetCompany(message []byte) ([]byte, error) {
 	company, err := s.repo.Get(id)
 	if err != nil {
 		return nil, err
+	} else if company.ID==0{
+		logger.Log.Info("Company not found")
+		return []byte("Company not found"), nil
 	} else {
 		logger.Log.Info("Working with database by GET request was successful")
 	}
+	fmt.Println(company.ID==0)
+
+
 	c, _ := json.Marshal(company)
 	return c, nil
 }

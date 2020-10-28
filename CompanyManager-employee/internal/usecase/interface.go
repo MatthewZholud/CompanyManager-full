@@ -6,6 +6,7 @@ import (
 
 type Reader interface {
 	Get(id int64) (*entity.Employee, error)
+	GetAll() (*[]entity.Employee, error)
 	GetEmployeesByCompany(id int64) (*[]entity.Employee, error)
 }
 
@@ -22,6 +23,7 @@ type Repository interface {
 
 type UseCase interface {
 	GetEmployee(message []byte) ([]byte, error)
+	GetAllCompany() ([]byte, error)
 	CreateEmployee(message []byte) ([]byte, error)
 	UpdateEmployee(message []byte) ([]byte, error)
 	DeleteEmployee(message []byte) ([]byte, error)

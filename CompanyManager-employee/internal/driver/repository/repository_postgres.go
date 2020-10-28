@@ -32,6 +32,24 @@ func (s *postgresRepo) Get(id int64) (*entity.Employee, error) {
 	return &employee, nil
 }
 
+func (s *postgresRepo) GetAll() (*[]entity.Employee, error) {
+	rows, err := s.db.Query("SELECT * from employees")
+	if err != nil {
+		logger.Log.Debug("Get all query to Db was failed")
+		return nil, err
+	}
+	defer rows.Close()
+	employees := []entity.Employee{}
+
+	for rows.Next() {
+		employee := entity.Employee{}
+		rows.Scan(&employee.ID, &employee.Name, &employee.SecondName, &employee.Surname,
+			&employee.PhotoUrl, &employee.HireDate, &employee.Position, &employee.CompanyID)
+		employees = append(employees, employee)
+	}
+	return &employees, nil
+}
+
 func (s *postgresRepo) Create(e *entity.Employee) (string, error) {
 	var empId string
 	err := s.db.QueryRow("INSERT INTO employees(name, secondName, surname, photoUrl, hireDate, position, company_id) "+
@@ -55,7 +73,7 @@ func (s *postgresRepo) Delete(id int64) (string, error) {
 
 func (s *postgresRepo) Update(e *entity.Employee) (string, error) {
 	_, err := s.db.Exec("UPDATE employees set name = $1, secondName = $2, surname = $3, photoUrl = $4, hireDate = $5,"+
-		" position = $6, company_id = $7 where employee_id = $7;", e.Name, e.SecondName, e.Surname,
+		" position = $6, company_id = $7 where employee_id = $8;", e.Name, e.SecondName, e.Surname,
 		e.PhotoUrl, e.HireDate, e.Position, e.CompanyID, e.ID)
 	if err != nil {
 		logger.Log.Debug("Update query to Db was failed")

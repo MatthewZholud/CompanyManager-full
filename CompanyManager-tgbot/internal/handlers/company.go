@@ -1,81 +1,69 @@
 package handlers
 
 import (
-	"encoding/json"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/kafka/producers"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/presenter"
-
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/kafka/consumers"
-
+	"fmt"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/logger"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/presenter"
+	companyHandler "github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/usecase/company"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
+
 const (
-	CompanyGETRequest = "CompanyGETRequest"
-	CompanyGETAllRequest = "CompanyGETAllRequest"
-	CompanyPUTRequest = "CompanyPUTRequest"
-	CompanyGETResponse = "CompanyGETResponse"
-	CompanyGETAllResponse = "CompanyGETAllResponse"
-	CompanyPUTResponse = "CompanyPUTResponse"
+	CompanyNotFound = "Company not found"
+	Success = "Successful update"
 )
 
-
-func GetCompanies () []byte {
-	//var companies []presenter.Company
-	byteUUID, err := producers.KafkaSend([]byte("Get all Request"), CompanyGETAllRequest)
-	if err != nil {
-		logger.Log.Errorf("Error sending message to env: %v", err)
-		return nil
-	}
-	msg, err := consumers.KafkaGetStruct(CompanyGETAllResponse, byteUUID)
-	if err != nil {
-		logger.Log.Errorf("Error sending message to env: %v", err)
-		return nil
-	}
+func (u Updates) GetCompaniesCommand(msg tgbotapi.MessageConfig) tgbotapi.MessageConfig{
+	response := companyHandler.GetCompanies()
+	msg.Text = FormatCompanyArr(response)
 	return msg
-	//companies, err = JsonToCompanyArr(msg)
-	//if err != nil {
-	//	logger.Log.Errorf("Can't convert json to employee array: %v", err)
-	//	return
-	//}
 }
 
-func GetCompany(id string) *presenter.Company {
-	var company *presenter.Company
 
-	byteUUID, err := producers.KafkaSend([]byte(id), CompanyGETRequest)
-	if err != nil {
-		logger.Log.Errorf("Error sending message to kafka: %v", err)
-		return nil
+func (u Updates) UpdateCompanyCommand(msg tgbotapi.MessageConfig) tgbotapi.MessageConfig{
+
+	msg1 := u.simpleListen()
+	if !IsNumericAndPositive(msg1.Text){
+		logger.Log.Errorf("Data is not numeric and positive: %v")
+		msg.Text = "Please, try again\nInput is not correct"
+		return msg
 	}
-	msg, err := consumers.KafkaGetStruct(CompanyGETResponse, byteUUID)
-	if err != nil {
-		logger.Log.Errorf("Error sending message to kafka: %v", err)
-		return nil
+	msg = tgbotapi.NewMessage(msg1.Chat.ID, msg1.Text)
+
+	company, response := companyHandler.GetCompany(msg.Text)
+	if response == CompanyNotFound {
+		msg.Text = "Company not found"
+		logger.Log.Info("Company not found")
+		return msg
 	}
-	company, err = JsonToCompany(msg)
-	if err != nil {
-		logger.Log.Errorf("Can't convert json to company struct: %v", err)
-		return nil
+
+	oldCompany := presenter.Company{
+		ID: company.ID,
+		Name: company.Name,
+		Legalform: company.Legalform,
 	}
-	return company
+
+	company = u.ButtonListenCompany(msg, company)
+
+	if company == nil {
+		msg.Text = "Break"
+		return msg
+	}
+	if oldCompany.ID == company.ID && oldCompany.Name == company.Name && oldCompany.Legalform == company.Legalform {
+		msg.Text = "You didn't change anything:"
+		return msg
+	}
+
+	response = companyHandler.UpdateCompany(company)
+	if response != Success {
+		msg.Text = "Updating failed"
+		logger.Log.Errorf("Updating failed: ")
+		return msg
+	} else {
+		msg.Text = fmt.Sprintf("Successful update\n\nNew Company Info:\nCompany ID: %v\nCompany Name: %s\nCompany Legal form: %s",
+			company.ID, company.Name, company.Legalform)
+		logger.Log.Infof("Successful update")
+		return msg
+	}
 }
 
-func UpdateCompany(company *presenter.Company) string {
-	comp, err := json.Marshal(company)
-	if err != nil {
-		logger.Log.Errorf("Can't prepare company struct for sending to env: %v", err)
-		return ""
-
-	}
-	byteUUID, err := producers.KafkaSend(comp, CompanyPUTRequest)
-	if err != nil {
-		logger.Log.Errorf("Error sending message to env: %v", err)
-		return ""
-	}
-	msg, err := consumers.KafkaGetStruct(CompanyPUTResponse, byteUUID)
-	if err != nil {
-		logger.Log.Errorf("Error sending message to env: %v", err)
-		return ""
-	}
-	return string(msg)
-}

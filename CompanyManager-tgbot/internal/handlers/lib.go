@@ -1,63 +1,14 @@
 package handlers
 
 import (
-	"encoding/json"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/logger"
+	"fmt"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/presenter"
-	"net/http"
+	"sort"
 	"strconv"
 )
 
 
-func JsonToEmployee(msg []byte) (*presenter.Employee, error) {
-	employee := presenter.Employee{}
-	if err := json.Unmarshal(msg, &employee); err != nil {
-		logger.Log.Debug("Can't convert Json to employee struct")
 
-		return nil, err
-	}
-	return &employee, nil
-}
-
-func JsonToEmployeeArr(msg []byte) ([]presenter.Employee, error) {
-	employee := []presenter.Employee{}
-	if err := json.Unmarshal(msg, &employee); err != nil {
-		logger.Log.Debug("Can't convert Json to array of employee struct")
-		return nil, err
-	}
-
-	return employee, nil
-}
-
-func JsonToCompanyArr(msg []byte) ([]presenter.Company, error) {
-	companies := []presenter.Company{}
-	if err := json.Unmarshal(msg, &companies); err != nil {
-		logger.Log.Debug("Can't convert Json to array of company struct")
-		return nil, err
-	}
-
-	return companies, nil
-}
-
-func JsonToCompany(msg []byte) (*presenter.Company, error) {
-	company := presenter.Company{}
-	if err := json.Unmarshal(msg, &company); err != nil {
-		logger.Log.Debug("Can't convert Json to company struct")
-
-		return nil, err
-	}
-	return &company, nil
-}
-
-func ByteToInt64(msg []byte) (int64, error) {
-	str := string(msg)
-	id, err := strconv.Atoi(str)
-	if err != nil {
-		logger.Log.Debug("Can't convert byte to int64")
-		return 0, err
-	}
-	return int64(id), nil
-}
 
 func IsNumericAndPositive(s string) bool {
 	i, err := strconv.ParseFloat(s, 64)
@@ -68,10 +19,30 @@ func IsNumericAndPositive(s string) bool {
 	}
 }
 
+func FormatCompanyArr(companies []presenter.Company) string {
+	message := "List of Companies:\nCompany ID    Company Name\n"
+	sort.Slice(companies, func(i, j int) (less bool) {
+		return companies[i].ID < companies[j].ID
+	})
+	for i := range companies{
+		msg := fmt.Sprintf("%-30v %-20s\n", companies[i].ID, companies[i].Name)
+		message = message + msg
+	}
 
-func respondWithError(w http.ResponseWriter, errorMessage string) {
-	w.WriteHeader(http.StatusInternalServerError)
-	w.Write([]byte(errorMessage))
+	return message
+}
+
+func FormatEmployeeArr(employees []presenter.Employee) string {
+	message := "List of Employees:\nEmployee ID   Employee Name   Employee Position     CompanyID\n"
+	sort.Slice(employees, func(i, j int) (less bool) {
+		return employees[i].ID < employees[j].ID
+	})
+	for i := range employees{
+		msg := fmt.Sprintf("%-25v %-30s %-30s %v\n", employees[i].ID, employees[i].Name, employees[i].Position, employees[i].CompanyID)
+		message = message + msg
+	}
+
+	return message
 }
 
 

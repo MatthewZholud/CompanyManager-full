@@ -38,6 +38,9 @@ services:
       - "8006:8006"
     env_file:
       - env/.env
+    environment:
+      - "KAFKA_BROKERS=kafka:9092"
+      - "BROADCAST=false"
     depends_on:
       - kafka
       - postgresdb
@@ -50,6 +53,9 @@ services:
       - "8007:8007"
     env_file:
       - env/.env
+    environment:
+      - "KAFKA_BROKERS=kafka:9092"
+      - "BROADCAST=false"
     depends_on:
       - kafka
       - postgresdb
@@ -61,6 +67,9 @@ services:
       - "8008:8008"
     env_file:
       - env/tgbot-variables.env
+    environment:
+      - "KAFKA_BROKERS=kafka:9092"
+      - "BROADCAST=false"
     depends_on:
       - kafka
 
