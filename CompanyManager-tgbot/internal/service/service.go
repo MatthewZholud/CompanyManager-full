@@ -4,9 +4,10 @@ package service
 //	"go.uber.org/zap"
 //)
 //
-//type Service interface {
-//	GetDefinition(string) (api.Response, error)
-//}
+type RedisRep interface {
+	Set( msg int)  error
+	Get() ([]int, error)
+}
 //
 //type BotService struct {
 //	apiConfig *config.APIConfig

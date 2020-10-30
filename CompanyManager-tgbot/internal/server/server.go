@@ -1,11 +1,14 @@
 package server
 
 import (
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/handlers"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/logger"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"os"
 )
+
+
+
 
 type Bot struct {
 	BotAPI     *tgbotapi.BotAPI
@@ -18,18 +21,17 @@ func Init(token string) Bot {
 	} else {
 		logger.Log.Infof("Authorized on account %s", bot.Self.UserName)
 	}
+
 	return Bot{
 		BotAPI:     bot,
 	}
 }
 
-func StartBot() {
+func StartBot() Bot {
 	bot := Init(os.Getenv("TG_TOKEN"))
-	updates := handlers.NewUpdateChan(bot.BotAPI)
-	for  {
-		updates.Listen()
-	}
+	return bot
 }
+
 
 
 
