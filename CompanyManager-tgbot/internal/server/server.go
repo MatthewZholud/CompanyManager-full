@@ -16,6 +16,7 @@ type Bot struct {
 
 func Init(token string) Bot {
 	bot, err := tgbotapi.NewBotAPI(token)
+
 	if err != nil {
 		logger.Log.Fatal("Can't connect to telegram bot: ", err)
 	} else {

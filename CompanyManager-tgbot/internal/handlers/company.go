@@ -20,13 +20,23 @@ func (u Updates) GetCompaniesCommand(msg tgbotapi.MessageConfig) tgbotapi.Messag
 }
 
 
-func (u Updates) UpdateCompanyCommand(msg tgbotapi.MessageConfig) tgbotapi.MessageConfig{
-
-	msg1 := u.simpleListen()
+func (u Updates) UpdateCompanyCommand(msg tgbotapi.MessageConfig, ch chan tgbotapi.MessageConfig){
+	mshChan1 := make(chan *tgbotapi.Message, 1)
+	id := msg.ChatID
+	go u.simpleListen(mshChan1, id)
+	msg1 := <- mshChan1
+	fmt.Println(msg1.Text)
+	if msg1.IsCommand(){
+		u.switchCommand(msg1)
+		msg.Text = "continue"
+		ch <- msg
+		return
+	}
 	if !IsNumericAndPositive(msg1.Text){
 		logger.Log.Errorf("Data is not numeric and positive: %v")
 		msg.Text = "Please, try again\nInput is not correct"
-		return msg
+		ch <- msg
+		return
 	}
 	msg = tgbotapi.NewMessage(msg1.Chat.ID, msg1.Text)
 
@@ -34,7 +44,9 @@ func (u Updates) UpdateCompanyCommand(msg tgbotapi.MessageConfig) tgbotapi.Messa
 	if response == CompanyNotFound {
 		msg.Text = "Company not found"
 		logger.Log.Info("Company not found")
-		return msg
+		ch <- msg
+		return
+
 	}
 
 	oldCompany := presenter.Company{
@@ -43,27 +55,39 @@ func (u Updates) UpdateCompanyCommand(msg tgbotapi.MessageConfig) tgbotapi.Messa
 		Legalform: company.Legalform,
 	}
 
-	company = u.ButtonListenCompany(msg, company)
 
-	if company == nil {
-		msg.Text = "Break"
-		return msg
+	compFromChan := make(chan *presenter.Company, 1)
+
+	go u.ButtonListenCompany(msg, company, compFromChan)
+
+	c := <- compFromChan
+
+	if c == nil {
+		msg.Text = "continue"
+		ch <- msg
+		return
 	}
-	if oldCompany.ID == company.ID && oldCompany.Name == company.Name && oldCompany.Legalform == company.Legalform {
+
+	if oldCompany.ID == c.ID && oldCompany.Name == c.Name && oldCompany.Legalform == c.Legalform {
 		msg.Text = "You didn't change anything:"
-		return msg
+		ch <- msg
+		return
 	}
 
-	response = companyHandler.UpdateCompany(company)
+
+	response = companyHandler.UpdateCompany(c)
 	if response != Success {
 		msg.Text = "Updating failed"
 		logger.Log.Errorf("Updating failed: ")
-		return msg
+		ch <- msg
+		return
 	} else {
 		msg.Text = fmt.Sprintf("Successful update\n\nNew Company Info:\nCompany ID: %v\nCompany Name: %s\nCompany Legal form: %s",
-			company.ID, company.Name, company.Legalform)
+			c.ID, c.Name, c.Legalform)
+		//u.NotifyAll(fmt.Sprintf("Company with ID %v was updated.", newCompany.ID))
 		logger.Log.Infof("Successful update")
-		return msg
+		ch <- msg
+		return
 	}
 }
 

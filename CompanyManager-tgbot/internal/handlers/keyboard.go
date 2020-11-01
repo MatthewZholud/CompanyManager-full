@@ -51,131 +51,160 @@ var employeeNumericKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	),
 )
 
-func (u Updates) ButtonListenCompany(msg tgbotapi.MessageConfig, comp *presenter.Company) *presenter.Company {
+func (u Updates) ButtonListenCompany(msg tgbotapi.MessageConfig, comp *presenter.Company, ch chan *presenter.Company) {
+	oldCompany := presenter.Company{
+		ID:        comp.ID,
+		Name:      comp.Name,
+		Legalform: comp.Legalform,
+	}
 	msg.Text = fmt.Sprintf("New Company Info:\nCompany ID: %v\nCompany Name: %s\nCompany Legal form: %s\nSelect what parameter do you whant to change?",
-		comp.ID, comp.Name, comp.Legalform)
+		oldCompany.ID, oldCompany.Name, oldCompany.Legalform)
 	msg.ReplyMarkup = companyNumericKeyboard
 	u.Bot.Send(msg)
 	msg.ReplyMarkup = nil
 	for update := range u.Ch {
 		if update.CallbackQuery != nil {
-			switch update.CallbackQuery.Data {
-			case "Break":
-				comp = nil
-				return comp
+			if update.CallbackQuery.From.ID == int(msg.ChatID) {
 
-			case "Save":
-				return comp
+				switch update.CallbackQuery.Data {
+				case "Break":
+					comp = nil
+					ch <- comp
+					return
 
-			case "CompanyName":
-				msg.Text = "Enter new Company Name:"
-				u.Bot.Send(msg)
-				msg1 := u.simpleListen()
-				comp.Name = msg1.Text
-				comp = u.ButtonListenCompany(msg, comp)
-				return comp
+				case "Save":
+					ch <- &oldCompany
+					return
 
-			case "CompanyLegalForm":
-				msg.Text = "Enter new Legal form:"
-				u.Bot.Send(msg)
-				msg1 := u.simpleListen()
-				comp.Legalform = msg1.Text
-				comp = u.ButtonListenCompany(msg, comp)
-				return comp
+				case "CompanyName":
+					msg.Text = "Enter new Company Name:"
+					u.Bot.Send(msg)
+					mshChan1 := make(chan *tgbotapi.Message, 1)
+					u.simpleListen(mshChan1, msg.ChatID)
+					msg1 := <-mshChan1
+					if msg1.IsCommand() {
+						u.switchCommand(msg1)
+						comp = nil
+						ch <- comp
+						return
+					}
+					oldCompany.Name = msg1.Text
+					u.ButtonListenCompany(msg, &oldCompany, ch)
+					return
 
-			default:
-				return nil
+				case "CompanyLegalForm":
+					msg.Text = "Enter new Legal form:"
+					u.Bot.Send(msg)
+					mshChan1 := make(chan *tgbotapi.Message, 1)
+					u.simpleListen(mshChan1, msg.ChatID)
+					msg1 := <-mshChan1
+					if msg1.IsCommand() {
+						u.switchCommand(msg1)
+						comp = nil
+						ch <- comp
+						return
+					}
+					oldCompany.Legalform = msg1.Text
+					u.ButtonListenCompany(msg, &oldCompany, ch)
+					return
+
+				default:
+					return
+				}
+			} else {
+				continue
 			}
+		} else if update.Message.IsCommand() {
+			u.switchCommand(update.Message)
+			comp = nil
+			ch <- comp
+			return
 		}
-		if update.Message.IsCommand() {
-			return nil
-		}
-
+		continue
 	}
-	return nil
+	return
 }
 
-
-func (u Updates) ButtonListenEmployee(msg tgbotapi.MessageConfig, empl *presenter.Employee) *presenter.Employee {
-	msg.Text = fmt.Sprintf("New Employee Info:\nEmployee ID: %v\nEmployee Name: %s\nEmployee Second " +
-		"Name: %s\nEmployee Surname: %s\nEmployee PhotoUrl: %s\nEmployee HireDate: %s\nEmployee Position: %s\n" +
-		"Employee CompanyID: %v\nSelect what parameter do you whant to change?",
-		empl.ID, empl.Name, empl.SecondName, empl.Surname, empl.PhotoUrl, empl.HireDate, empl.Position, empl.CompanyID)
-	msg.ReplyMarkup = employeeNumericKeyboard
-	u.Bot.Send(msg)
-	msg.ReplyMarkup = nil
-	for update := range u.Ch {
-		if update.CallbackQuery != nil {
-			switch update.CallbackQuery.Data {
-			case "Break":
-				empl = nil
-				return empl
-
-			case "Save":
-				return empl
-
-			case "EmployeeName":
-				msg.Text = "Enter new Company Name:"
-				u.Bot.Send(msg)
-				msg1 := u.simpleListen()
-				empl.Name = msg1.Text
-				empl = u.ButtonListenEmployee(msg, empl)
-				return empl
-
-			case "EmployeeSecondName":
-				msg.Text = "Enter new Legal form:"
-				u.Bot.Send(msg)
-				msg1 := u.simpleListen()
-				empl.SecondName = msg1.Text
-				empl = u.ButtonListenEmployee(msg, empl)
-				return empl
-			case "Surname":
-				msg.Text = "Enter new Company Name:"
-				u.Bot.Send(msg)
-				msg1 := u.simpleListen()
-				empl.Surname = msg1.Text
-				empl = u.ButtonListenEmployee(msg, empl)
-				return empl
-
-			case "PhotoUrl":
-				msg.Text = "Enter new Legal form:"
-				u.Bot.Send(msg)
-				msg1 := u.simpleListen()
-				empl.PhotoUrl = msg1.Text
-				empl = u.ButtonListenEmployee(msg, empl)
-				return empl
-			case "HireDate":
-				msg.Text = "Enter new Company Name:"
-				u.Bot.Send(msg)
-				msg1 := u.simpleListen()
-				empl.HireDate = msg1.Text
-				empl = u.ButtonListenEmployee(msg, empl)
-				return empl
-
-			case "Position":
-				msg.Text = "Enter new Legal form:"
-				u.Bot.Send(msg)
-				msg1 := u.simpleListen()
-				empl.Position = msg1.Text
-				empl = u.ButtonListenEmployee(msg, empl)
-				return empl
-
-			//case "CompanyID":
-			//	msg.Text = "Enter new Legal form:"
-			//	u.Bot.Send(msg)
-			//	msg1 := u.simpleListen()
-			//	empl.CompanyID = msg1.Text
-			//	empl = u.ButtonListenEmployee(msg, empl)
-			//	return empl
-
-			default:
-				return nil
-			}
-		}
-		if update.Message.IsCommand() {
-			return nil
-		}
-
-	}
-	return nil
-}
+//func (u Updates) ButtonListenEmployee(msg tgbotapi.MessageConfig, empl *presenter.Employee) *presenter.Employee {
+//	msg.Text = fmt.Sprintf("New Employee Info:\nEmployee ID: %v\nEmployee Name: %s\nEmployee Second " +
+//		"Name: %s\nEmployee Surname: %s\nEmployee PhotoUrl: %s\nEmployee HireDate: %s\nEmployee Position: %s\n" +
+//		"Employee CompanyID: %v\nSelect what parameter do you whant to change?",
+//		empl.ID, empl.Name, empl.SecondName, empl.Surname, empl.PhotoUrl, empl.HireDate, empl.Position, empl.CompanyID)
+//	msg.ReplyMarkup = employeeNumericKeyboard
+//	u.Bot.Send(msg)
+//	msg.ReplyMarkup = nil
+//	for update := range u.Ch {
+//		if update.CallbackQuery != nil {
+//			switch update.CallbackQuery.Data {
+//			case "Break":
+//				empl = nil
+//				return empl
+//
+//			case "Save":
+//				return empl
+//
+//			case "EmployeeName":
+//				msg.Text = "Enter new Employee Name:"
+//				u.Bot.Send(msg)
+//				msg1 := u.simpleListen()
+//				empl.Name = msg1.Text
+//				empl = u.ButtonListenEmployee(msg, empl)
+//				return empl
+//
+//			case "EmployeeSecondName":
+//				msg.Text = "Enter new Legal form:"
+//				u.Bot.Send(msg)
+//				msg1 := u.simpleListen()
+//				empl.SecondName = msg1.Text
+//				empl = u.ButtonListenEmployee(msg, empl)
+//				return empl
+//			case "Surname":
+//				msg.Text = "Enter new Employee Name:"
+//				u.Bot.Send(msg)
+//				msg1 := u.simpleListen()
+//				empl.Surname = msg1.Text
+//				empl = u.ButtonListenEmployee(msg, empl)
+//				return empl
+//
+//			case "PhotoUrl":
+//				msg.Text = "Enter new Legal form:"
+//				u.Bot.Send(msg)
+//				msg1 := u.simpleListen()
+//				empl.PhotoUrl = msg1.Text
+//				empl = u.ButtonListenEmployee(msg, empl)
+//				return empl
+//			case "HireDate":
+//				msg.Text = "Enter new Employee Name:"
+//				u.Bot.Send(msg)
+//				msg1 := u.simpleListen()
+//				empl.HireDate = msg1.Text
+//				empl = u.ButtonListenEmployee(msg, empl)
+//				return empl
+//
+//			case "Position":
+//				msg.Text = "Enter new Legal form:"
+//				u.Bot.Send(msg)
+//				msg1 := u.simpleListen()
+//				empl.Position = msg1.Text
+//				empl = u.ButtonListenEmployee(msg, empl)
+//				return empl
+//
+//			//case "CompanyID":
+//			//	msg.Text = "Enter new Legal form:"
+//			//	u.Bot.Send(msg)
+//			//	msg1 := u.simpleListen()
+//			//	empl.CompanyID = msg1.Text
+//			//	empl = u.ButtonListenEmployee(msg, empl)
+//			//	return empl
+//
+//			default:
+//				return nil
+//			}
+//		}
+//		if update.Message.IsCommand() {
+//			return nil
+//		}
+//
+//	}
+//	return nil
+//}

@@ -12,10 +12,8 @@ func main() {
 	redis := redis.Initialize()
 	bot := server.StartBot()
 	updates := handlers.NewUpdateChan(bot.BotAPI, redis)
+	updates.Listen()
 
-	for  {
-		updates.Listen()
-	}
 }
 
 
