@@ -13,40 +13,40 @@ const (
 	Success = "Successful update"
 )
 
-func (u Updates) GetCompaniesCommand(msg tgbotapi.MessageConfig) tgbotapi.MessageConfig{
+func (u Updates) GetCompaniesCommand(msg tgbotapi.MessageConfig, ch chan tgbotapi.MessageConfig){
 	response := companyHandler.GetCompanies()
 	msg.Text = FormatCompanyArr(response)
-	return msg
+	ch <- msg
 }
 
 
 func (u Updates) UpdateCompanyCommand(msg tgbotapi.MessageConfig, ch chan tgbotapi.MessageConfig){
-	mshChan1 := make(chan *tgbotapi.Message, 1)
-	id := msg.ChatID
-	go u.simpleListen(mshChan1, id)
-	msg1 := <- mshChan1
-	fmt.Println(msg1.Text)
-	if msg1.IsCommand(){
-		u.switchCommand(msg1)
-		msg.Text = "continue"
-		ch <- msg
-		return
+	mshChan1 := make(chan tgbotapi.Message, 1)
+
+	u.Active[int(msg.ChatID)] = &Ch{
+		SimplInput: mshChan1,
+		ButtonInput: nil,
 	}
+
+	msg1 := <- mshChan1
+
 	if !IsNumericAndPositive(msg1.Text){
 		logger.Log.Errorf("Data is not numeric and positive: %v")
 		msg.Text = "Please, try again\nInput is not correct"
 		ch <- msg
 		return
 	}
+
 	msg = tgbotapi.NewMessage(msg1.Chat.ID, msg1.Text)
 
 	company, response := companyHandler.GetCompany(msg.Text)
+
+
 	if response == CompanyNotFound {
 		msg.Text = "Company not found"
 		logger.Log.Info("Company not found")
 		ch <- msg
 		return
-
 	}
 
 	oldCompany := presenter.Company{
@@ -56,10 +56,9 @@ func (u Updates) UpdateCompanyCommand(msg tgbotapi.MessageConfig, ch chan tgbota
 	}
 
 
+
 	compFromChan := make(chan *presenter.Company, 1)
-
-	go u.ButtonListenCompany(msg, company, compFromChan)
-
+	go u.CompanyKeyboard(company, msg, compFromChan)
 	c := <- compFromChan
 
 	if c == nil {

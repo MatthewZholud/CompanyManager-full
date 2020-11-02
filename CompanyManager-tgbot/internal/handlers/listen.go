@@ -8,9 +8,10 @@ import (
 )
 
 type Updates struct {
-	Bot   *tgbotapi.BotAPI
-	Ch    tgbotapi.UpdatesChannel
-	Redis service.RedisRep
+	Bot    *tgbotapi.BotAPI
+	Ch     tgbotapi.UpdatesChannel
+	Redis  service.RedisRep
+	Active map[int]*Ch
 }
 
 func NewUpdateChan(bot *tgbotapi.BotAPI, rep service.RedisRep) Updates {
@@ -21,51 +22,81 @@ func NewUpdateChan(bot *tgbotapi.BotAPI, rep service.RedisRep) Updates {
 	if err != nil {
 		panic(err)
 	}
+	Active := New()
 	logger.Log.Info("New Update channel")
 	return Updates{
-		Ch:    ch,
-		Bot:   bot,
-		Redis: rep,
+		Ch:     ch,
+		Bot:    bot,
+		Redis:  rep,
+		Active: Active,
 	}
 }
+
+
+
 
 func (u Updates) Listen() {
-	//EmployeeGETRequestChan := make(chan tgbotapi.MessageConfig)
 	u.Ch.Clear()
-	for update := range u.Ch {
-		if update.Message == nil {
-			return
-		}
-		if update.CallbackQuery != nil {
-			return
-		}
-		if update.Message.IsCommand() {
-			 u.switchCommand(update.Message)
-		}
-	}
-}
-
-func (u Updates) simpleListen(ch chan *tgbotapi.Message, id int64) {
+	var str *Ch
 	for update := range u.Ch {
 		if update.CallbackQuery != nil {
+			str = checkIfInTheActive(u.Active, update.CallbackQuery.From.ID)
+		} else {
+			str = checkIfInTheActive(u.Active, update.Message.From.ID)
+		}
+		if str != nil {
+			if str.ButtonInput != nil {
+				if update.CallbackQuery != nil {
+					str.ButtonInput <- *update.CallbackQuery
+					continue
+				}
+				if update.Message.IsCommand() {
+					u.Active[update.CallbackQuery.From.ID] = nil
+					go u.switchCommand(update.Message)
+					continue
+				} else {
+					continue
+				}
+			} else if str.SimplInput != nil {
+				if update.CallbackQuery != nil {
+					continue
+				}
+				if update.Message.IsCommand() {
+					u.Active[update.Message.From.ID] = nil
+					go u.switchCommand(update.Message)
+				} else {
+					str.SimplInput <- *update.Message
+					continue
+				}
+			}
+		} else {
+			go func() {
+				if update.Message == nil {
+					return
+				}
+				if update.CallbackQuery != nil {
+					return
+				}
+				if update.Message.IsCommand() {
+					go u.switchCommand(update.Message)
+					return
+				}
+			}()
 			continue
 		}
-		fmt.Println(u)
-		fmt.Println(id, update.Message.Chat.ID)
-		if update.Message.Chat.ID == id {
-			ch <- update.Message
-			close(ch)
-			return
-		} else if update.Message.IsCommand() {
-			u.switchCommand(update.Message)
-			ch <- update.Message
-			return
-		}
-		return
+		continue
 	}
 }
 
 
+
+func checkIfInTheActive(Active map[int]*Ch, id int) *Ch {
+	if val, ok := Active[id]; ok {
+		return val
+	} else {
+		return nil
+	}
+}
 
 
 
@@ -84,17 +115,21 @@ func (u Updates) switchCommand(update *tgbotapi.Message) {
 		return
 
 	case "getCompanies":
-		msg = u.GetCompaniesCommand(msg)
+		msgChan := make(chan tgbotapi.MessageConfig, 1)
+		go u.GetCompaniesCommand(msg, msgChan)
+		msg = <-msgChan
 		u.Bot.Send(msg)
 		return
 
 	case "updateCompany":
-		mshChan := make(chan tgbotapi.MessageConfig, 1)
+		msgChan := make(chan tgbotapi.MessageConfig, 1)
 
 		msg.Text = "Please, enter company id:"
 		u.Bot.Send(msg)
-		go u.UpdateCompanyCommand(msg, mshChan)
-		msg = <-mshChan
+		go u.UpdateCompanyCommand(msg, msgChan)
+		msg = <-msgChan
+		u.Active[int(msg.ChatID)] = nil
+
 		if msg.Text == "continue" {
 			break
 		}
@@ -102,14 +137,23 @@ func (u Updates) switchCommand(update *tgbotapi.Message) {
 		return
 
 	case "getEmployees":
-		msg = u.GetEmployeesCommand(msg)
+		msgChan := make(chan tgbotapi.MessageConfig, 1)
+
+		go u.GetEmployeesCommand(msg, msgChan)
+		msg = <- msgChan
 		u.Bot.Send(msg)
 		return
 
 	case "updateEmployee":
+		msgChan := make(chan tgbotapi.MessageConfig, 1)
 		msg.Text = "Please, enter employee id:"
 		u.Bot.Send(msg)
-		//msg = u.UpdateEmployeeCommand(msg)
+		go u.UpdateEmployeeCommand(msg, msgChan)
+		msg = <-msgChan
+		u.Active[int(msg.ChatID)] = nil
+		if msg.Text == "continue" {
+			break
+		}
 		u.Bot.Send(msg)
 		return
 
@@ -133,6 +177,3 @@ func (u Updates) switchCommand(update *tgbotapi.Message) {
 //	}
 //}
 
-func (u Updates) SendTextToTelegramChat(chatId int, text string) {
-
-}

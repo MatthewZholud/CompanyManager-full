@@ -2,11 +2,11 @@ package company
 
 import (
 	"encoding/json"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/kafka/consumers"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/kafka/producers"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/presenter"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/usecase"
-
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/kafka/consumers"
+	"sync"
 
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/logger"
 )
@@ -23,8 +23,12 @@ const (
 	CompanyNotFound = "Company not found"
 )
 
+var mutex sync.Mutex
+
 
 func GetCompanies () []presenter.Company {
+	mutex.Lock()
+	defer mutex.Unlock()
 	var companies []presenter.Company
 	byteUUID, err := producers.KafkaSend([]byte("Get all Request"), CompanyGETAllRequest)
 	if err != nil {
@@ -45,6 +49,8 @@ func GetCompanies () []presenter.Company {
 }
 
 func GetCompany(id string) (*presenter.Company, string) {
+	mutex.Lock()
+	defer mutex.Unlock()
 	var company *presenter.Company
 
 	byteUUID, err := producers.KafkaSend([]byte(id), CompanyGETRequest)
@@ -68,6 +74,8 @@ func GetCompany(id string) (*presenter.Company, string) {
 }
 
 func UpdateCompany(company *presenter.Company) string {
+	mutex.Lock()
+	defer mutex.Unlock()
 	comp, err := json.Marshal(company)
 	if err != nil {
 		logger.Log.Errorf("Can't prepare company struct for sending to kafka: %v", err)

@@ -7,6 +7,7 @@ import (
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/logger"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/presenter"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/usecase"
+	"sync"
 )
 
 const (
@@ -22,7 +23,14 @@ const (
 
 
 )
+
+var mutex sync.Mutex
+
+
+
 func GetEmployees () []presenter.Employee {
+	mutex.Lock()
+	defer mutex.Unlock()
 	var employees []presenter.Employee
 	byteUUID, err := producers.KafkaSend([]byte("Get all Request"), EmployeeGETAllRequest)
 	if err != nil {
@@ -43,6 +51,8 @@ func GetEmployees () []presenter.Employee {
 }
 
 func GetEmployee(id string) (*presenter.Employee, string) {
+	mutex.Lock()
+	defer mutex.Unlock()
 	var employee *presenter.Employee
 
 	byteUUID, err := producers.KafkaSend([]byte(id), EmployeeGETRequest)
@@ -66,6 +76,8 @@ func GetEmployee(id string) (*presenter.Employee, string) {
 }
 
 func UpdateCompany(employee *presenter.Employee) string {
+	mutex.Lock()
+	defer mutex.Unlock()
 	comp, err := json.Marshal(employee)
 	if err != nil {
 		logger.Log.Errorf("Can't prepare employee struct for sending to kafka: %v", err)
