@@ -11,13 +11,13 @@ import (
 	"net/http"
 )
 
-func RegisterCompanyRoutes(r *mux.Router) *mux.Router {
+func RegisterCompanyRoutes(r *mux.Router, comp handlers.CompanyRep) *mux.Router {
 	logger.Log.Infof("Ready to process company requests ")
-	r.HandleFunc("/company/", handlers.CreateCompany()).Methods(http.MethodPost)
-	r.HandleFunc("/company/", handlers.UpdateCompany()).Methods(http.MethodPut)
-	r.HandleFunc("/company/{companyId}", handlers.GetCompany()).Methods(http.MethodGet)
-	r.HandleFunc("/company/{companyId}", handlers.FormUpdateCompany()).Methods(http.MethodPost)
-	r.HandleFunc("/company/{companyId}", handlers.DeleteCompany()).Methods(http.MethodDelete)
-	r.HandleFunc("/company/{companyId}/employees", handlers.GetEmployeesByCompany()).Methods(http.MethodGet)
+	r.HandleFunc("/company/", comp.CreateCompany()).Methods(http.MethodPost)
+	r.HandleFunc("/company/", comp.UpdateCompany()).Methods(http.MethodPut)
+	r.HandleFunc("/company/{companyId}", comp.GetCompany()).Methods(http.MethodGet)
+	r.HandleFunc("/company/{companyId}", comp.FormUpdateCompany()).Methods(http.MethodPost)
+	r.HandleFunc("/company/{companyId}", comp.DeleteCompany()).Methods(http.MethodDelete)
+	r.HandleFunc("/company/{companyId}/employees", comp.GetEmployeesByCompany()).Methods(http.MethodGet)
 	return r
 }

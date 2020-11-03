@@ -1,4 +1,4 @@
-package producers
+package kafka
 
 import (
 	"context"
@@ -21,7 +21,7 @@ func getKafkaWriter(kafkaURL, topic string) *kafka.Writer {
 	})
 }
 
-func KafkaSend(str []byte, topic string) ([]byte, error) {
+func (k *kafkaClient) KafkaSend(str []byte, topic string) ([]byte, error) {
 	writer := getKafkaWriter(os.Getenv("KAFKA_BROKERS"), topic)
 	defer writer.Close()
 	logger.Log.Infof("Ready to send message to kafka")

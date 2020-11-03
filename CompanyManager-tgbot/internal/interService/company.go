@@ -18,6 +18,7 @@ const (
 	Success = "Success"
 )
 
+
 func (i *interService) GetCompanies() []presenter.Company {
 	mutex.Lock()
 	defer mutex.Unlock()

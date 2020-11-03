@@ -10,12 +10,19 @@ type redisClient struct {
 	client *redis.Client
 }
 
-func Initialize() *redisClient {
+func Initialize(redisUrl string) *redisClient {
 	conn := redis.NewClient(&redis.Options{
-		Addr: os.Getenv("REDIS_URL"),
+		Addr: redisUrl,
 	})
 	if err := conn.Ping().Err(); err != nil {
 		logger.Log.Fatalf("Unable to connect to redis: %v", err)
 		}
-	return &redisClient{client: conn}
+	return &redisClient{
+		client: conn,
+	}
+}
+
+func StartRedis() *redisClient {
+	redis := Initialize(os.Getenv("REDIS_URL"))
+	return redis
 }

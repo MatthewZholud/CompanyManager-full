@@ -7,9 +7,6 @@ import (
 	"strconv"
 )
 
-
-
-
 func IsNumericAndPositive(s string) bool {
 	i, err := strconv.ParseFloat(s, 64)
 	if err == nil && i >= 0 {
@@ -24,7 +21,7 @@ func FormatCompanyArr(companies []presenter.Company) string {
 	sort.Slice(companies, func(i, j int) (less bool) {
 		return companies[i].ID < companies[j].ID
 	})
-	for i := range companies{
+	for i := range companies {
 		msg := fmt.Sprintf("Company ID: %v\nCompany Name: %s\n\n", companies[i].ID, companies[i].Name)
 		message = message + msg
 	}
@@ -37,16 +34,10 @@ func FormatEmployeeArr(employees []presenter.Employee) string {
 	sort.Slice(employees, func(i, j int) (less bool) {
 		return employees[i].ID < employees[j].ID
 	})
-	for i := range employees{
+	for i := range employees {
 		msg := fmt.Sprintf("Employee ID: %v\nEmployee Name: %s\nEmployee Position: %s\nEmployee CompanyID: %v\n\n",
-			employees[i].ID,  employees[i].Name, employees[i].Position, employees[i].CompanyID)
+			employees[i].ID, employees[i].Name, employees[i].Position, employees[i].CompanyID)
 		message = message + msg
 	}
 	return message
 }
-
-
-
-
-
-

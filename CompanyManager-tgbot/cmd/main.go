@@ -11,9 +11,10 @@ import (
 
 func main() {
 	logger.InitLog()
-	redis := redis.Initialize()
-	kafka := kafka.Initialize()
+	redis := redis.StartRedis()
 	newBot := server.StartBot()
+	kafka := kafka.Initialize()
+
 
 	interService := interService.Initialize(kafka)
 

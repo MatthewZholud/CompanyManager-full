@@ -19,7 +19,6 @@ func Init(token string) Bot {
 	} else {
 		logger.Log.Infof("Authorized on account %s", bot.Self.UserName)
 	}
-
 	return Bot{
 		BotAPI: bot,
 	}

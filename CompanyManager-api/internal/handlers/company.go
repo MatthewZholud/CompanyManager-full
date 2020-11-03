@@ -2,8 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/kafka/consumers"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/kafka/producers"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/kafka"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/logger"
 	"strconv"
 
@@ -25,7 +24,17 @@ const (
 	EmployeeByCompanyGETRequest = "EmployeeByCompanyGETRequest"
 )
 
-func CreateCompany() http.HandlerFunc {
+type companyService struct {
+	kafka kafka.KafkaRep
+}
+
+func InitializeCompany(kafka kafka.KafkaRep) *companyService {
+	return &companyService{
+		kafka: kafka,
+	}
+}
+
+func (c *companyService) CreateCompany() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -48,13 +57,13 @@ func CreateCompany() http.HandlerFunc {
 			respondWithError(w, errorMessage)
 			return
 		}
-		byteUUID, err := producers.KafkaSend(comp, CompanyPOSTRequest)
+		byteUUID, err := c.kafka.KafkaSend(comp, CompanyPOSTRequest)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)
 			return
 		}
-		msg, err := consumers.KafkaGetStruct(CompanyPOSTResponse, byteUUID)
+		msg, err := c.kafka.KafkaGet(CompanyPOSTResponse, byteUUID)
 		if err != nil {
 			respondWithError(w, errorMessage)
 			logger.Log.Errorf("Error sending message to env: %v", err)
@@ -83,19 +92,19 @@ func CreateCompany() http.HandlerFunc {
 	}
 }
 
-func GetCompany() http.HandlerFunc {
+func (c *companyService) GetCompany() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		errorMessage := "Error reading company"
 		var company *presenter.Company
 
-		byteUUID, err := producers.KafkaSend([]byte(mux.Vars(r)["companyId"]), CompanyGETRequest)
+		byteUUID, err := c.kafka.KafkaSend([]byte(mux.Vars(r)["companyId"]), CompanyGETRequest)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)
 			return
 		}
-		msg, err := consumers.KafkaGetStruct(CompanyGETResponse, byteUUID)
+		msg, err := c.kafka.KafkaGet(CompanyGETResponse, byteUUID)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)
@@ -117,17 +126,17 @@ func GetCompany() http.HandlerFunc {
 	}
 }
 
-func DeleteCompany() http.HandlerFunc {
+func (c *companyService) DeleteCompany() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		errorMessage := "Error deleting company"
-		byteUUID, err := producers.KafkaSend([]byte(mux.Vars(r)["companyId"]), CompanyDeleteRequest)
+		byteUUID, err := c.kafka.KafkaSend([]byte(mux.Vars(r)["companyId"]), CompanyDeleteRequest)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)
 			return
 		}
-		msg, err := consumers.KafkaGetStruct(CompanyDeleteResponse, byteUUID)
+		msg, err := c.kafka.KafkaGet(CompanyDeleteResponse, byteUUID)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)
@@ -143,7 +152,7 @@ func DeleteCompany() http.HandlerFunc {
 	}
 }
 
-func UpdateCompany() http.HandlerFunc {
+func (c *companyService) UpdateCompany() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		errorMessage := "Error updating company"
@@ -164,13 +173,13 @@ func UpdateCompany() http.HandlerFunc {
 			respondWithError(w, errorMessage)
 			return
 		}
-		byteUUID, err := producers.KafkaSend(comp, CompanyPUTRequest)
+		byteUUID, err := c.kafka.KafkaSend(comp, CompanyPUTRequest)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)
 			return
 		}
-		msg, err := consumers.KafkaGetStruct(CompanyPUTResponse, byteUUID)
+		msg, err := c.kafka.KafkaGet(CompanyPUTResponse, byteUUID)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)
@@ -186,7 +195,7 @@ func UpdateCompany() http.HandlerFunc {
 	}
 }
 
-func FormUpdateCompany() http.HandlerFunc {
+func (c *companyService) FormUpdateCompany() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -211,13 +220,13 @@ func FormUpdateCompany() http.HandlerFunc {
 			respondWithError(w, errorMessage)
 			return
 		}
-		byteUUID, err := producers.KafkaSend(comp, CompanyPUTRequest)
+		byteUUID, err := c.kafka.KafkaSend(comp, CompanyPUTRequest)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)
 			return
 		}
-		msg, err := consumers.KafkaGetStruct(CompanyPUTResponse, byteUUID)
+		msg, err := c.kafka.KafkaGet(CompanyPUTResponse, byteUUID)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)
@@ -234,7 +243,7 @@ func FormUpdateCompany() http.HandlerFunc {
 }
 
 
-func GetEmployeesByCompany() http.HandlerFunc {
+func (c *companyService) GetEmployeesByCompany() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -246,13 +255,13 @@ func GetEmployeesByCompany() http.HandlerFunc {
 			return
 		}
 		var employee []presenter.Employee
-		byteUUID, err := producers.KafkaSend([]byte(mux.Vars(r)["companyId"]), EmployeeByCompanyGETRequest)
+		byteUUID, err := c.kafka.KafkaSend([]byte(mux.Vars(r)["companyId"]), EmployeeByCompanyGETRequest)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)
 			return
 		}
-		msg, err := consumers.KafkaGetStruct(EmployeeByCompanyGETResponse, byteUUID)
+		msg, err := c.kafka.KafkaGet(EmployeeByCompanyGETResponse, byteUUID)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)

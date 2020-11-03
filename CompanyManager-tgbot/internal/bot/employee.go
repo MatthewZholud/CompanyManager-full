@@ -13,7 +13,7 @@ const (
 )
 
 func (u Updates) GetEmployeesCommand(msg tgbotapi.MessageConfig,  ch chan tgbotapi.MessageConfig){
-	response := u.usecase.GetEmployees()
+	response := u.interService.GetEmployees()
 	msg.Text = FormatEmployeeArr(response)
 	ch <- msg
 }
@@ -23,13 +23,13 @@ func (u Updates) UpdateEmployeeCommand(msg tgbotapi.MessageConfig, ch chan tgbot
 	mshChan1 := make(chan tgbotapi.Message, 1)
 
 	u.Active[int(msg.ChatID)] = &Ch{
-		SimplInput: mshChan1,
+		SimpleInput: mshChan1,
 		ButtonInput: nil,
 	}
 
 	msg1 := <- mshChan1
 	if !IsNumericAndPositive(msg1.Text){
-		logger.Log.Errorf("Data is not numeric and positive: %v")
+		logger.Log.Debug("Data is not numeric and positive: %v")
 		msg.Text = "Please, try again\nInput is not correct"
 		ch <- msg
 		return
@@ -38,7 +38,7 @@ func (u Updates) UpdateEmployeeCommand(msg tgbotapi.MessageConfig, ch chan tgbot
 
 	msg = tgbotapi.NewMessage(msg1.Chat.ID, msg1.Text)
 
-	employee, response := u.usecase.GetEmployee(msg.Text)
+	employee, response := u.interService.GetEmployee(msg.Text)
 	if response == EmployeeNotFound {
 		msg.Text = "Employee not found"
 		logger.Log.Info("Employee not found")
@@ -71,13 +71,13 @@ func (u Updates) UpdateEmployeeCommand(msg tgbotapi.MessageConfig, ch chan tgbot
 
 	if (oldEmployee.ID == employee.ID && oldEmployee.Name == employee.Name && oldEmployee.Surname == employee.Surname &&
 		oldEmployee.SecondName == employee.SecondName && oldEmployee.Position == employee.Position &&
-		oldEmployee.PhotoUrl == employee.Position && oldEmployee.CompanyID == employee.CompanyID && oldEmployee.HireDate == employee.HireDate) {
+		oldEmployee.PhotoUrl == employee.Position && oldEmployee.CompanyID == employee.CompanyID) {
 		msg.Text = "You didn't change anything:"
 		ch <- msg
 		return
 	}
 
-	response = u.usecase.UpdateEmployee(e)
+	response = u.interService.UpdateEmployee(e)
 
 	if response != Success {
 		msg.Text = "Updating failed"
@@ -86,9 +86,9 @@ func (u Updates) UpdateEmployeeCommand(msg tgbotapi.MessageConfig, ch chan tgbot
 		return
 	} else {
 		msg.Text = fmt.Sprintf("Successful update\n\nNew Employee Info:\nEmployee ID: %v\nEmployee Name: %s\nEmployee Second " +
-			"Name: %s\nEmployee Surname: %s\nEmployee PhotoUrl: %s\nEmployee HireDate: %s\nEmployee Position: %s\n" +
+			"Name: %s\nEmployee Surname: %s\nEmployee PhotoUrl:  %s\nEmployee Position: %s\n" +
 			"Employee CompanyID: %v",
-			e.ID, e.Name, e.SecondName, e.Surname, e.PhotoUrl, e.HireDate, e.Position, e.CompanyID)
+			e.ID, e.Name, e.SecondName, e.Surname, e.PhotoUrl, e.Position, e.CompanyID)
 		go u.NotifyAll(fmt.Sprintf("Employee with ID %v was updated.", e.ID))
 		logger.Log.Infof("Successful update")
 		ch <- msg

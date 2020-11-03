@@ -13,7 +13,7 @@ const (
 )
 
 func (u Updates) GetCompaniesCommand(msg tgbotapi.MessageConfig, ch chan tgbotapi.MessageConfig){
-	response := u.usecase.GetCompanies()
+	response := u.interService.GetCompanies()
 	msg.Text = FormatCompanyArr(response)
 	ch <- msg
 }
@@ -23,14 +23,14 @@ func (u Updates) UpdateCompanyCommand(msg tgbotapi.MessageConfig, ch chan tgbota
 	mshChan1 := make(chan tgbotapi.Message, 1)
 
 	u.Active[int(msg.ChatID)] = &Ch{
-		SimplInput: mshChan1,
+		SimpleInput: mshChan1,
 		ButtonInput: nil,
 	}
 
 	msg1 := <- mshChan1
 
 	if !IsNumericAndPositive(msg1.Text){
-		logger.Log.Errorf("Data is not numeric and positive: %v")
+		logger.Log.Debug("Data is not numeric and positive: %v")
 		msg.Text = "Please, try again\nInput is not correct"
 		ch <- msg
 		return
@@ -38,11 +38,11 @@ func (u Updates) UpdateCompanyCommand(msg tgbotapi.MessageConfig, ch chan tgbota
 
 	msg = tgbotapi.NewMessage(msg1.Chat.ID, msg1.Text)
 
-	company, response := u.usecase.GetCompany(msg.Text)
+	company, response := u.interService.GetCompany(msg.Text)
 
 
 	if response == CompanyNotFound {
-		msg.Text = "Company not found"
+		msg.Text = "Company with such ID not found"
 		logger.Log.Info("Company not found")
 		ch <- msg
 		return
@@ -73,7 +73,7 @@ func (u Updates) UpdateCompanyCommand(msg tgbotapi.MessageConfig, ch chan tgbota
 	}
 
 
-	response = u.usecase.UpdateCompany(c)
+	response = u.interService.UpdateCompany(c)
 	if response != Success {
 		msg.Text = "Updating failed"
 		logger.Log.Errorf("Updating failed: ")

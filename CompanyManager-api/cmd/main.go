@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/handlers"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/kafka"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/logger"
 	"net/http"
 
@@ -17,9 +19,12 @@ const (
 
 func main() {
 	logger.InitLog()
+	kafka := kafka.Initialize()
+	company := handlers.InitializeCompany(kafka)
+	employee := handlers.InitializeEmployee(kafka)
 	r := mux.NewRouter()
-	routes.RegisterEmployeeRoutes(r)
-	routes.RegisterCompanyRoutes(r)
+	routes.RegisterEmployeeRoutes(r, employee)
+	routes.RegisterCompanyRoutes(r, company)
 	routes.RegisterProfilingRoutes(r)
 
 	//profiling.RegisterCompanyRoutes(r)

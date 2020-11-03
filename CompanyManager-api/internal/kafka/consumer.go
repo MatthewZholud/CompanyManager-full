@@ -1,4 +1,4 @@
-package consumers
+package kafka
 
 import (
 	"context"
@@ -20,7 +20,7 @@ func getKafkaReader(kafkaURL, topic string) *kafka.Reader {
 	})
 }
 
-func KafkaGetStruct(topic string, byteUUID []byte) ([]byte, error) {
+func (k *kafkaClient) KafkaGet(topic string, byteUUID []byte) ([]byte, error) {
 	reader := getKafkaReader(os.Getenv("KAFKA_BROKERS"), topic)
 
 	reader.SetOffset(kafka.LastOffset)

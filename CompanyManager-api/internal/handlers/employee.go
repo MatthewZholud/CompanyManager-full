@@ -2,11 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/kafka"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/logger"
 	"strconv"
 
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/kafka/consumers"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/kafka/producers"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/presenter"
 
 	"github.com/gorilla/mux"
@@ -25,7 +24,17 @@ const (
 	EmployeeDeleteResponse = "EmployeeDeleteResponse"
 )
 
-func CreateEmployee() http.HandlerFunc {
+type employeeService struct {
+	kafka kafka.KafkaRep
+}
+
+func InitializeEmployee(kafka kafka.KafkaRep) *employeeService {
+	return &employeeService{
+		kafka: kafka,
+	}
+}
+
+func (e *employeeService) CreateEmployee() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
@@ -52,13 +61,13 @@ func CreateEmployee() http.HandlerFunc {
 			respondWithError(w, errorMessage)
 			return
 		}
-		byteUUID, err := producers.KafkaSend(empl, EmployeePOSTRequest)
+		byteUUID, err := e.kafka.KafkaSend(empl, EmployeePOSTRequest)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)
 			return
 		}
-		msg, err := consumers.KafkaGetStruct(EmployeePOSTResponse, byteUUID)
+		msg, err := e.kafka.KafkaGet(EmployeePOSTResponse, byteUUID)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)
@@ -92,18 +101,18 @@ func CreateEmployee() http.HandlerFunc {
 	}
 }
 
-func GetEmployee() http.HandlerFunc {
+func (e *employeeService) GetEmployee() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		errorMessage := "Error reading employees"
 		var employee *presenter.Employee
-		byteUUID, err := producers.KafkaSend([]byte(mux.Vars(r)["id"]), EmployeeGETRequest)
+		byteUUID, err := e.kafka.KafkaSend([]byte(mux.Vars(r)["id"]), EmployeeGETRequest)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)
 			return
 		}
-		msg, err := consumers.KafkaGetStruct(EmployeeGETResponse, byteUUID)
+		msg, err := e.kafka.KafkaGet(EmployeeGETResponse, byteUUID)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)
@@ -125,17 +134,17 @@ func GetEmployee() http.HandlerFunc {
 	}
 }
 
-func DeleteEmployee() http.HandlerFunc {
+func (e *employeeService) DeleteEmployee() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		errorMessage := "Error deleting employee"
-		byteUUID, err := producers.KafkaSend([]byte(mux.Vars(r)["id"]), EmployeeDeleteRequest)
+		byteUUID, err := e.kafka.KafkaSend([]byte(mux.Vars(r)["id"]), EmployeeDeleteRequest)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)
 			return
 		}
-		msg, err := consumers.KafkaGetStruct(EmployeeDeleteResponse, byteUUID)
+		msg, err := e.kafka.KafkaGet(EmployeeDeleteResponse, byteUUID)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)
@@ -151,7 +160,7 @@ func DeleteEmployee() http.HandlerFunc {
 	}
 }
 
-func UpdateEmployee() http.HandlerFunc {
+func (e *employeeService) UpdateEmployee() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -179,13 +188,13 @@ func UpdateEmployee() http.HandlerFunc {
 			respondWithError(w, errorMessage)
 			return
 		}
-		byteUUID, err := producers.KafkaSend(empl, EmployeePUTRequest)
+		byteUUID, err := e.kafka.KafkaSend(empl, EmployeePUTRequest)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)
 			return
 		}
-		msg, err := consumers.KafkaGetStruct(EmployeePUTResponse, byteUUID)
+		msg, err := e.kafka.KafkaGet(EmployeePUTResponse, byteUUID)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)
@@ -201,7 +210,7 @@ func UpdateEmployee() http.HandlerFunc {
 	}
 }
 
-func FormUpdateEmployee() http.HandlerFunc {
+func (e *employeeService) FormUpdateEmployee() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -235,13 +244,13 @@ func FormUpdateEmployee() http.HandlerFunc {
 			respondWithError(w, errorMessage)
 			return
 		}
-		byteUUID, err := producers.KafkaSend(empl, EmployeePUTRequest)
+		byteUUID, err := e.kafka.KafkaSend(empl, EmployeePUTRequest)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)
 			return
 		}
-		msg, err := consumers.KafkaGetStruct(EmployeePUTResponse, byteUUID)
+		msg, err := e.kafka.KafkaGet(EmployeePUTResponse, byteUUID)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			respondWithError(w, errorMessage)

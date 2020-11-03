@@ -31,10 +31,10 @@ func (k *kafkaClient) KafkaGet(topic string, byteUUID []byte) ([]byte, error) {
 	for {
 		msg, err := reader.ReadMessage(context.Background())
 		if err != nil {
-			logger.Log.Debugf("Error receiving message from kafka, topic: %v", topic)
+			logger.Log.Debugf("Error receiving message from kafka, topic: %s", topic)
 			return nil, err
 		} else {
-			logger.Log.Infof("Got message from kafka, topic: %v", topic)
+			logger.Log.Infof("Got message from kafka, topic: %s", topic)
 		}
 		if string(byteUUID) != string(msg.Key) {
 			logger.Log.Errorf("The key of the sent message does not match the key of the received one, please try again")

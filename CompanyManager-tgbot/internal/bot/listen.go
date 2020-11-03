@@ -14,7 +14,7 @@ type Updates struct {
 	Bot    *tgbotapi.BotAPI
 	Ch     tgbotapi.UpdatesChannel
 	Redis  redis.RedisRep
-	usecase interService.InterServiceRep
+	interService interService.InterServiceRep
 	Active map[int] *Ch
 }
 
@@ -32,7 +32,7 @@ func NewUpdateChan(bot *tgbotapi.BotAPI, rep redis.RedisRep, usecase interServic
 		Ch:     ch,
 		Bot:    bot,
 		Redis:  rep,
-		usecase: usecase,
+		interService: usecase,
 		Active: Active,
 	}
 }
@@ -62,7 +62,7 @@ func (u Updates) Listen() {
 				} else {
 					continue
 				}
-			} else if str.SimplInput != nil {
+			} else if str.SimpleInput != nil {
 				if update.CallbackQuery != nil {
 					continue
 				}
@@ -70,7 +70,7 @@ func (u Updates) Listen() {
 					u.Active[update.Message.From.ID] = nil
 					go u.switchCommand(update.Message)
 				} else {
-					str.SimplInput <- *update.Message
+					str.SimpleInput <- *update.Message
 					continue
 				}
 			}
