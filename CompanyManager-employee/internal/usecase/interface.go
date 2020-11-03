@@ -29,3 +29,18 @@ type UseCase interface {
 	DeleteEmployee(message []byte) ([]byte, error)
 	GetEmployeeByCompany(message []byte) ([]byte, error)
 }
+
+
+
+type KafkaRep interface {
+	send
+	get
+}
+
+type send interface {
+	KafkaConsumer(topic, brokers string, ch chan entity.Message) []byte
+}
+
+type get interface {
+	KafkaSend(str, Key []byte, topic string)
+}

@@ -3,15 +3,17 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/kafka"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/logger"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/profiling"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/usecase"
-	//"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/domain/env/producers"
 
 	"os"
 
 	_ "github.com/lib/pq"
 )
+
+const postgres = "postgres"
 
 func main() {
 	logger.InitLog()
@@ -21,7 +23,7 @@ func main() {
 	//PsqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 	//	"postgresdb", "5432", "postgres", "mypassword", "company_manager")
 
-	db, err := sql.Open("postgres", PsqlInfo)
+	db, err := sql.Open(postgres, PsqlInfo)
 	if err != nil {
 		logger.Log.Fatal("Can't create connection with Db:", err)
 	} else {
@@ -36,5 +38,7 @@ func main() {
 
 
 	go profiling.ProfilingServer()
-	usecase.InitService(db)
+
+	kafka := kafka.Initialize()
+	usecase.InitService(db, kafka)
 }

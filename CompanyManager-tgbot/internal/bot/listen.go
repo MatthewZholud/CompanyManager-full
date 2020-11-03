@@ -3,22 +3,18 @@ package bot
 import (
 	"fmt"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/logger"
-
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/interService"
-
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/redis"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 type Updates struct {
 	Bot    *tgbotapi.BotAPI
 	Ch     tgbotapi.UpdatesChannel
-	Redis  redis.RedisRep
-	interService interService.InterServiceRep
+	Redis  RedisRep
+	interService InterServiceRep
 	Active map[int] *Ch
 }
 
-func NewUpdateChan(bot *tgbotapi.BotAPI, rep redis.RedisRep, usecase interService.InterServiceRep) Updates {
+func NewUpdateChan(bot *tgbotapi.BotAPI, rep RedisRep, interService InterServiceRep) Updates {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 	ch, err := bot.GetUpdatesChan(u)
@@ -32,7 +28,7 @@ func NewUpdateChan(bot *tgbotapi.BotAPI, rep redis.RedisRep, usecase interServic
 		Ch:     ch,
 		Bot:    bot,
 		Redis:  rep,
-		interService: usecase,
+		interService: interService,
 		Active: Active,
 	}
 }

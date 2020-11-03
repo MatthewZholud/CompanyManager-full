@@ -6,8 +6,8 @@ import (
 )
 
 
-func InitService(db *sql.DB)  {
+func InitService(db *sql.DB, kafka KafkaRep)  {
 	conn := repository.NewPostgresRepository(db)
 	service := NewService(conn)
-	StartKafkaCommunication(service)
+	StartKafkaCommunication(service, kafka)
 }

@@ -1,22 +1,14 @@
 package interService
 
-import (
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/presenter"
-)
-
-type InterServiceRep interface {
-	employee
-	company
+type KafkaRep interface {
+	send
+	get
 }
 
-type employee interface {
-	GetEmployees () []presenter.Employee
-	GetEmployee(id string) (*presenter.Employee, string)
-	UpdateEmployee(employee *presenter.Employee) string
+type send interface {
+	KafkaSend(str []byte, topic string) ([]byte, error)
 }
 
-type company interface {
-	GetCompanies () []presenter.Company
-	GetCompany(id string) (*presenter.Company, string)
-	UpdateCompany(company *presenter.Company) string
+type get interface {
+	KafkaGet(topic string, byteUUID []byte) ([]byte, error)
 }

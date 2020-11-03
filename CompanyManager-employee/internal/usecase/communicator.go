@@ -2,8 +2,6 @@ package usecase
 
 import (
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/entity"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/kafka/consumers"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/kafka/producers"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-employee/internal/logger"
 	"os"
 )
@@ -23,7 +21,7 @@ const (
 	EmployeeByCompanyGETResponse = "EmployeeByCompanyGETResponse"
 )
 
-func StartKafkaCommunication(service *Service) {
+func StartKafkaCommunication(service *Service, kafka KafkaRep) {
 
 	EmployeeGETRequestChan := make(chan entity.Message)
 	EmployeeGETAllRequestChan := make(chan entity.Message)
@@ -35,12 +33,12 @@ func StartKafkaCommunication(service *Service) {
 
 	broker := os.Getenv("KAFKA_BROKERS")
 
-	go consumers.KafkaConsumer(EmployeeGETRequest, broker, EmployeeGETRequestChan)
-	go consumers.KafkaConsumer(EmployeeGETAllRequest, broker, EmployeeGETAllRequestChan)
-	go consumers.KafkaConsumer(EmployeePOSTRequest, broker, EmployeePOSTRequestChan)
-	go consumers.KafkaConsumer(EmployeePUTRequest, broker, EmployeePUTRequestChan)
-	go consumers.KafkaConsumer(EmployeeDeleteRequest, broker, EmployeeDeleteRequestChan)
-	go consumers.KafkaConsumer(EmployeeByCompanyGETRequest, broker, EmployeeByCompanyGETRequestChan)
+	go kafka.KafkaConsumer(EmployeeGETRequest, broker, EmployeeGETRequestChan)
+	go kafka.KafkaConsumer(EmployeeGETAllRequest, broker, EmployeeGETAllRequestChan)
+	go kafka.KafkaConsumer(EmployeePOSTRequest, broker, EmployeePOSTRequestChan)
+	go kafka.KafkaConsumer(EmployeePUTRequest, broker, EmployeePUTRequestChan)
+	go kafka.KafkaConsumer(EmployeeDeleteRequest, broker, EmployeeDeleteRequestChan)
+	go kafka.KafkaConsumer(EmployeeByCompanyGETRequest, broker, EmployeeByCompanyGETRequestChan)
 
 
 	for {
@@ -52,7 +50,7 @@ func StartKafkaCommunication(service *Service) {
 			} else {
 				logger.Log.Info("Get request completed")
 			}
-			producers.KafkaSend(response, message.Key, EmployeeGETResponse)
+			kafka.KafkaSend(response, message.Key, EmployeeGETResponse)
 
 		case message := <-EmployeeGETAllRequestChan:
 			response, err := service.GetAllEmployee()
@@ -61,7 +59,7 @@ func StartKafkaCommunication(service *Service) {
 			} else {
 				logger.Log.Info("Get all request completed")
 			}
-			producers.KafkaSend(response, message.Key, EmployeeGETAllResponse)
+			kafka.KafkaSend(response, message.Key, EmployeeGETAllResponse)
 
 		case message := <-EmployeePOSTRequestChan:
 			response, err := service.CreateEmployee(message.Value)
@@ -70,7 +68,7 @@ func StartKafkaCommunication(service *Service) {
 			} else {
 				logger.Log.Info("Create request completed")
 			}
-			producers.KafkaSend(response, message.Key, EmployeePOSTResponse)
+			kafka.KafkaSend(response, message.Key, EmployeePOSTResponse)
 
 		case message := <-EmployeePUTRequestChan:
 			response, err := service.UpdateEmployee(message.Value)
@@ -79,7 +77,7 @@ func StartKafkaCommunication(service *Service) {
 			} else {
 				logger.Log.Info("Update request completed")
 			}
-			producers.KafkaSend(response, message.Key, EmployeePUTResponse)
+			kafka.KafkaSend(response, message.Key, EmployeePUTResponse)
 
 		case message := <-EmployeeDeleteRequestChan:
 			response, err := service.DeleteEmployee(message.Value)
@@ -88,7 +86,7 @@ func StartKafkaCommunication(service *Service) {
 			} else {
 				logger.Log.Info("Delete request completed")
 			}
-			producers.KafkaSend(response, message.Key, EmployeeDeleteResponse)
+			kafka.KafkaSend(response, message.Key, EmployeeDeleteResponse)
 		case message := <-EmployeeByCompanyGETRequestChan:
 			response, err := service.GetEmployeeByCompany(message.Value)
 			if err != nil {
@@ -96,7 +94,7 @@ func StartKafkaCommunication(service *Service) {
 			} else {
 				logger.Log.Info("Get(employee by company) request completed")
 			}
-			producers.KafkaSend(response, message.Key, EmployeeByCompanyGETResponse)
+			kafka.KafkaSend(response, message.Key, EmployeeByCompanyGETResponse)
 		}
 	}
 }

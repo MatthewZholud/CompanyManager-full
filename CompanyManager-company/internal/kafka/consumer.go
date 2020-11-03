@@ -1,4 +1,4 @@
-package consumers
+package kafka
 
 import (
 	"context"
@@ -22,7 +22,7 @@ func getKafkaReader(kafkaURL, topic string) *kafka.Reader {
 	})
 }
 
-func KafkaConsumer(topic, brokers string, ch chan entity.Message) []byte {
+func (k *kafkaClient) KafkaConsumer(topic, brokers string, ch chan entity.Message) []byte {
 	reader := getKafkaReader(brokers, topic)
 	reader.SetOffset(kafka.LastOffset)
 	defer reader.Close()

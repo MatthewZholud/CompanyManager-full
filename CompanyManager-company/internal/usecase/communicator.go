@@ -2,8 +2,6 @@ package usecase
 
 import (
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/entity"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/kafka/consumers"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/kafka/producers"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-company/internal/logger"
 	"os"
 )
@@ -23,7 +21,7 @@ const (
 
 
 
-func StartKafkaCommunication(service *Service) {
+func StartKafkaCommunication(service *Service, kafka KafkaRep) {
 
 	CompanyGETRequestChan := make(chan entity.Message)
 	CompanyGETAllRequestChan := make(chan entity.Message)
@@ -33,11 +31,11 @@ func StartKafkaCommunication(service *Service) {
 
 	broker := os.Getenv("KAFKA_BROKERS")
 
-	go consumers.KafkaConsumer(CompanyGETRequest, broker, CompanyGETRequestChan)
-	go consumers.KafkaConsumer(CompanyGETAllRequest, broker, CompanyGETAllRequestChan)
-	go consumers.KafkaConsumer(CompanyPOSTRequest, broker, CompanyPOSTRequestChan)
-	go consumers.KafkaConsumer(CompanyPUTRequest, broker, CompanyPUTRequestChan)
-	go consumers.KafkaConsumer(CompanyDeleteRequest, broker, CompanyDeleteRequestChan)
+	go kafka.KafkaConsumer(CompanyGETRequest, broker, CompanyGETRequestChan)
+	go kafka.KafkaConsumer(CompanyGETAllRequest, broker, CompanyGETAllRequestChan)
+	go kafka.KafkaConsumer(CompanyPOSTRequest, broker, CompanyPOSTRequestChan)
+	go kafka.KafkaConsumer(CompanyPUTRequest, broker, CompanyPUTRequestChan)
+	go kafka.KafkaConsumer(CompanyDeleteRequest, broker, CompanyDeleteRequestChan)
 
 
 	for {
@@ -49,7 +47,7 @@ func StartKafkaCommunication(service *Service) {
 			} else {
 				logger.Log.Info("Get request completed")
 			}
-			producers.KafkaSend(response, message.Key, CompanyGETResponse)
+			kafka.KafkaSend(response, message.Key, CompanyGETResponse)
 
 		case message := <-CompanyGETAllRequestChan:
 			response, err := service.GetAllCompany()
@@ -58,7 +56,7 @@ func StartKafkaCommunication(service *Service) {
 			} else {
 				logger.Log.Info("Get all request completed")
 			}
-			producers.KafkaSend(response, message.Key, CompanyGETAllResponse)
+			kafka.KafkaSend(response, message.Key, CompanyGETAllResponse)
 
 		case message := <-CompanyPOSTRequestChan:
 			response, err := service.CreateCompany(message.Value)
@@ -67,7 +65,7 @@ func StartKafkaCommunication(service *Service) {
 			} else {
 				logger.Log.Info("Create request completed")
 			}
-			producers.KafkaSend(response, message.Key, CompanyPOSTResponse)
+			kafka.KafkaSend(response, message.Key, CompanyPOSTResponse)
 
 		case message := <-CompanyPUTRequestChan:
 			response, err := service.UpdateCompany(message.Value)
@@ -76,7 +74,7 @@ func StartKafkaCommunication(service *Service) {
 			} else {
 				logger.Log.Info("Update request completed")
 			}
-			producers.KafkaSend(response, message.Key, CompanyPUTResponse)
+			kafka.KafkaSend(response, message.Key, CompanyPUTResponse)
 
 		case message := <-CompanyDeleteRequestChan:
 			response, err := service.DeleteCompany(message.Value)
@@ -85,7 +83,7 @@ func StartKafkaCommunication(service *Service) {
 			} else {
 				logger.Log.Info("Delete request completed")
 			}
-			producers.KafkaSend(response, message.Key, CompanyDeleteResponse)
+			kafka.KafkaSend(response, message.Key, CompanyDeleteResponse)
 		}
 	}
 }
