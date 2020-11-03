@@ -12,13 +12,12 @@ func (u Handlers) SwitchCommand(update *tgbotapi.Message) {
 	case "start":
 		logger.Log.Debugf("Command %v from user with %v", update.Text, update.From.UserName)
 		u.Redis.Set(update.From.ID)
-		msg.Text = fmt.Sprintf("Hello, %s", update.From.UserName)
+		msg.Text = fmt.Sprintf("Hello, %s!!!\nWrite /help to see all commands.", update.From.UserName)
 		_, err := u.Bot.Send(msg)
 		if err != nil {
 			logger.Log.Errorf("Can't send message to user: %v", err)
 			return
 		}
-		logger.Log.Infof("New user has been registered: %v, with ID %v", update.From.UserName, update.From.ID)
 		return
 
 	case "help":
@@ -35,7 +34,7 @@ func (u Handlers) SwitchCommand(update *tgbotapi.Message) {
 		msgChan := make(chan tgbotapi.MessageConfig, 1)
 		go u.getCompaniesCommand(msg, msgChan)
 		msg = <-msgChan
-		logger.Log.Debugf("Received message from channel: %v", msg.Text)
+		logger.Log.Debugf("Received message from channel")
 
 		_, err := u.Bot.Send(msg)
 		if err != nil {
@@ -55,7 +54,7 @@ func (u Handlers) SwitchCommand(update *tgbotapi.Message) {
 		}
 		go u.updateCompanyCommand(msg, msgChan)
 		msg = <-msgChan
-		logger.Log.Debugf("Received message from channel: %v", msg.Text)
+		logger.Log.Debugf("Received message from channel")
 
 		u.Active[int(msg.ChatID)] = nil
 		if msg.Text == "continue" {
