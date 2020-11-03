@@ -19,7 +19,11 @@ make migration
 
 ### Usage
 
-URL adress:
+URL address:
 ```
 localhost:8005
+```
+Telegram bot address:
+```
+t.me/CompanyManagerBot
 ```
