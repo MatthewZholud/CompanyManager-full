@@ -1,20 +1,24 @@
-package handlers
+package bot
 
 import (
 	"fmt"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/logger"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/service"
+
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/interService"
+
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/redis"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 type Updates struct {
 	Bot    *tgbotapi.BotAPI
 	Ch     tgbotapi.UpdatesChannel
-	Redis  service.RedisRep
-	Active map[int]*Ch
+	Redis  redis.RedisRep
+	usecase interService.InterServiceRep
+	Active map[int] *Ch
 }
 
-func NewUpdateChan(bot *tgbotapi.BotAPI, rep service.RedisRep) Updates {
+func NewUpdateChan(bot *tgbotapi.BotAPI, rep redis.RedisRep, usecase interService.InterServiceRep) Updates {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 	ch, err := bot.GetUpdatesChan(u)
@@ -28,6 +32,7 @@ func NewUpdateChan(bot *tgbotapi.BotAPI, rep service.RedisRep) Updates {
 		Ch:     ch,
 		Bot:    bot,
 		Redis:  rep,
+		usecase: usecase,
 		Active: Active,
 	}
 }
@@ -51,7 +56,7 @@ func (u Updates) Listen() {
 					continue
 				}
 				if update.Message.IsCommand() {
-					u.Active[update.CallbackQuery.From.ID] = nil
+					u.Active[update.Message.From.ID] = nil
 					go u.switchCommand(update.Message)
 					continue
 				} else {
@@ -110,7 +115,7 @@ func (u Updates) switchCommand(update *tgbotapi.Message) {
 		u.Bot.Send(msg)
 		return
 	case "help":
-		msg.Text = "type /getCompanies  /updateCompany  /getEmployees  /updateEmployee"
+		msg.Text = "type: \n/getCompanies  \n/updateCompany  \n/getEmployees  \n/updateEmployee"
 		u.Bot.Send(msg)
 		return
 
@@ -158,22 +163,23 @@ func (u Updates) switchCommand(update *tgbotapi.Message) {
 		return
 
 	default:
-		msg.Text = "I don't know this command"
+		msg.Text = "Unknown command"
 		u.Bot.Send(msg)
 		return
 
 	}
 }
 
-//func (u Updates) NotifyAll(text string) {
-//	sl, err := u.Redis.Get()
-//	if err != nil {
-//		panic(err)
-//	}
-//	for i := range sl {
-//		c := int64(sl[i])
-//		msg := tgbotapi.NewMessage(c, text)
-//		u.Bot.Send(msg)
-//	}
-//}
+func (u Updates) NotifyAll(text string) {
+	//sl, err := u.Redis.Get()
+	//if err != nil {
+	//	panic(err)
+	//}
+	//for i := range sl {
+	//	c := int64(sl[i])
+	//	msg := tgbotapi.NewMessage(c, text)
+	//	u.Bot.Send(msg)
+	//}
+	return
+}
 

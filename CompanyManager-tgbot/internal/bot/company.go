@@ -1,10 +1,9 @@
-package handlers
+package bot
 
 import (
 	"fmt"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/logger"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/presenter"
-	companyHandler "github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/usecase/company"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
@@ -14,7 +13,7 @@ const (
 )
 
 func (u Updates) GetCompaniesCommand(msg tgbotapi.MessageConfig, ch chan tgbotapi.MessageConfig){
-	response := companyHandler.GetCompanies()
+	response := u.usecase.GetCompanies()
 	msg.Text = FormatCompanyArr(response)
 	ch <- msg
 }
@@ -39,7 +38,7 @@ func (u Updates) UpdateCompanyCommand(msg tgbotapi.MessageConfig, ch chan tgbota
 
 	msg = tgbotapi.NewMessage(msg1.Chat.ID, msg1.Text)
 
-	company, response := companyHandler.GetCompany(msg.Text)
+	company, response := u.usecase.GetCompany(msg.Text)
 
 
 	if response == CompanyNotFound {
@@ -52,7 +51,7 @@ func (u Updates) UpdateCompanyCommand(msg tgbotapi.MessageConfig, ch chan tgbota
 	oldCompany := presenter.Company{
 		ID: company.ID,
 		Name: company.Name,
-		Legalform: company.Legalform,
+		LegalForm: company.LegalForm,
 	}
 
 
@@ -67,14 +66,14 @@ func (u Updates) UpdateCompanyCommand(msg tgbotapi.MessageConfig, ch chan tgbota
 		return
 	}
 
-	if oldCompany.ID == c.ID && oldCompany.Name == c.Name && oldCompany.Legalform == c.Legalform {
+	if oldCompany.ID == c.ID && oldCompany.Name == c.Name && oldCompany.LegalForm == c.LegalForm {
 		msg.Text = "You didn't change anything:"
 		ch <- msg
 		return
 	}
 
 
-	response = companyHandler.UpdateCompany(c)
+	response = u.usecase.UpdateCompany(c)
 	if response != Success {
 		msg.Text = "Updating failed"
 		logger.Log.Errorf("Updating failed: ")
@@ -82,8 +81,8 @@ func (u Updates) UpdateCompanyCommand(msg tgbotapi.MessageConfig, ch chan tgbota
 		return
 	} else {
 		msg.Text = fmt.Sprintf("Successful update\n\nNew Company Info:\nCompany ID: %v\nCompany Name: %s\nCompany Legal form: %s",
-			c.ID, c.Name, c.Legalform)
-		//u.NotifyAll(fmt.Sprintf("Company with ID %v was updated.", newCompany.ID))
+			c.ID, c.Name, c.LegalForm)
+		go u.NotifyAll(fmt.Sprintf("Company with ID %v was updated.", c.ID))
 		logger.Log.Infof("Successful update")
 		ch <- msg
 		return

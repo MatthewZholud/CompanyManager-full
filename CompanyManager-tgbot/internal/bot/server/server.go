@@ -7,11 +7,8 @@ import (
 	"os"
 )
 
-
-
-
 type Bot struct {
-	BotAPI     *tgbotapi.BotAPI
+	BotAPI *tgbotapi.BotAPI
 }
 
 func Init(token string) Bot {
@@ -24,7 +21,7 @@ func Init(token string) Bot {
 	}
 
 	return Bot{
-		BotAPI:     bot,
+		BotAPI: bot,
 	}
 }
 
@@ -32,11 +29,3 @@ func StartBot() Bot {
 	bot := Init(os.Getenv("TG_TOKEN"))
 	return bot
 }
-
-
-
-
-
-
-
-

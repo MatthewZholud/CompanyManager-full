@@ -1,4 +1,4 @@
-package handlers
+package bot
 
 import (
 	"fmt"
@@ -61,10 +61,10 @@ func (u Updates) CompanyKeyboard(comp *presenter.Company, msg tgbotapi.MessageCo
 	oldCompany := presenter.Company{
 		ID:        comp.ID,
 		Name:      comp.Name,
-		Legalform: comp.Legalform,
+		LegalForm: comp.LegalForm,
 	}
 	msg.Text = fmt.Sprintf("New Company Info:\nCompany ID: %v\nCompany Name: %s\nCompany Legal form: %s\nSelect what parameter do you whant to change?",
-		oldCompany.ID, oldCompany.Name, oldCompany.Legalform)
+		oldCompany.ID, oldCompany.Name, oldCompany.LegalForm)
 	msg.ReplyMarkup = companyNumericKeyboard
 	u.Bot.Send(msg)
 	msg.ReplyMarkup = nil
@@ -118,7 +118,7 @@ func (u Updates) CompanyKeyboard(comp *presenter.Company, msg tgbotapi.MessageCo
 			ButtonInput: nil,
 		}
 		msg1 := <-mshChan1
-		oldCompany.Legalform = msg1.Text
+		oldCompany.LegalForm = msg1.Text
 		u.Active[int(msg.ChatID)] = &Ch{
 			SimplInput: nil,
 			ButtonInput: nil,

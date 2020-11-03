@@ -1,14 +1,10 @@
-package handlers
+package bot
 
 import (
 	"fmt"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/logger"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/presenter"
 
-	//"fmt"
-	//"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/logger"
-	//"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/presenter"
-	employeeHandler "github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/usecase/employee"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
@@ -17,7 +13,7 @@ const (
 )
 
 func (u Updates) GetEmployeesCommand(msg tgbotapi.MessageConfig,  ch chan tgbotapi.MessageConfig){
-	response := employeeHandler.GetEmployees()
+	response := u.usecase.GetEmployees()
 	msg.Text = FormatEmployeeArr(response)
 	ch <- msg
 }
@@ -42,7 +38,7 @@ func (u Updates) UpdateEmployeeCommand(msg tgbotapi.MessageConfig, ch chan tgbot
 
 	msg = tgbotapi.NewMessage(msg1.Chat.ID, msg1.Text)
 
-	employee, response := employeeHandler.GetEmployee(msg.Text)
+	employee, response := u.usecase.GetEmployee(msg.Text)
 	if response == EmployeeNotFound {
 		msg.Text = "Employee not found"
 		logger.Log.Info("Employee not found")
@@ -81,7 +77,7 @@ func (u Updates) UpdateEmployeeCommand(msg tgbotapi.MessageConfig, ch chan tgbot
 		return
 	}
 
-	response = employeeHandler.UpdateCompany(e)
+	response = u.usecase.UpdateEmployee(e)
 
 	if response != Success {
 		msg.Text = "Updating failed"
@@ -92,8 +88,8 @@ func (u Updates) UpdateEmployeeCommand(msg tgbotapi.MessageConfig, ch chan tgbot
 		msg.Text = fmt.Sprintf("Successful update\n\nNew Employee Info:\nEmployee ID: %v\nEmployee Name: %s\nEmployee Second " +
 			"Name: %s\nEmployee Surname: %s\nEmployee PhotoUrl: %s\nEmployee HireDate: %s\nEmployee Position: %s\n" +
 			"Employee CompanyID: %v",
-			employee.ID, employee.Name, employee.SecondName, employee.Surname, employee.PhotoUrl, employee.HireDate, employee.Position, employee.CompanyID)
-		//u.NotifyAll(fmt.Sprintf("Employee with ID %v was updated.", employee.ID))
+			e.ID, e.Name, e.SecondName, e.Surname, e.PhotoUrl, e.HireDate, e.Position, e.CompanyID)
+		go u.NotifyAll(fmt.Sprintf("Employee with ID %v was updated.", e.ID))
 		logger.Log.Infof("Successful update")
 		ch <- msg
 		return

@@ -1,4 +1,4 @@
-package handlers
+package bot
 
 import (
 	"fmt"
@@ -20,12 +20,12 @@ func IsNumericAndPositive(s string) bool {
 }
 
 func FormatCompanyArr(companies []presenter.Company) string {
-	message := "List of Companies:\nCompany ID    Company Name\n"
+	message := "List of Companies:\n\n"
 	sort.Slice(companies, func(i, j int) (less bool) {
 		return companies[i].ID < companies[j].ID
 	})
 	for i := range companies{
-		msg := fmt.Sprintf("%-30v %-20s\n", companies[i].ID, companies[i].Name)
+		msg := fmt.Sprintf("Company ID: %v\nCompany Name: %s\n\n", companies[i].ID, companies[i].Name)
 		message = message + msg
 	}
 
@@ -33,15 +33,15 @@ func FormatCompanyArr(companies []presenter.Company) string {
 }
 
 func FormatEmployeeArr(employees []presenter.Employee) string {
-	message := "List of Employees:\nEmployee ID   Employee Name   Employee Position     CompanyID\n"
+	message := "List of Employees:\n\n"
 	sort.Slice(employees, func(i, j int) (less bool) {
 		return employees[i].ID < employees[j].ID
 	})
 	for i := range employees{
-		msg := fmt.Sprintf("%-25v %-30s %-30s %v\n", employees[i].ID, employees[i].Name, employees[i].Position, employees[i].CompanyID)
+		msg := fmt.Sprintf("Employee ID: %v\nEmployee Name: %s\nEmployee Position: %s\nEmployee CompanyID: %v\n\n",
+			employees[i].ID,  employees[i].Name, employees[i].Position, employees[i].CompanyID)
 		message = message + msg
 	}
-
 	return message
 }
 

@@ -2,63 +2,51 @@ package redis
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/logger"
-	"github.com/go-redis/redis"
-	"os"
 )
 
-type redisClient struct {
-	client *redis.Client
-}
-
-func Initialize() *redisClient {
-	c := redis.NewClient(&redis.Options{
-		Addr: os.Getenv("REDIS_URL"),
-	})
-	if err := c.Ping().Err(); err != nil {
-		panic("Unable to connect to redis " + err.Error())
-	}
-	return &redisClient{client: c}
-}
-
-func (r *redisClient) Set(msg int) {
-	slice, b := r.needChange(msg)
-	if b{
-		slice = append(slice, msg)
-		cacheEntry, err := json.Marshal(slice)
+func (r *redisClient) Set(newId int) {
+	users, isNew := r.needChange(newId)
+	if isNew {
+		users = append(users, newId)
+		cacheEntry, err := json.Marshal(users)
 		if err != nil {
-			logger.Log.Errorf("Can't marshal slice to send to cash: %v", err)
+			logger.Log.Errorf("Can't register new user: Can't marshal slice to send to cash: %v", err)
 		}
 		err = r.client.Set("UsersIDs", cacheEntry, 0).Err()
 		if err != nil {
-			logger.Log.Errorf("Can't set slice to cash: %v", err)
+			logger.Log.Errorf("Can't register new user: Can't set slice to cash: %v", err)
 		}
 	}
 }
 
 func (r *redisClient) Get() ([]int, error) {
+	var users []int
+
 	val, err := r.client.Get("UsersIDs").Result()
-
-
-	var slice []int
-	err = json.Unmarshal([]byte(val), &slice)
-
-	fmt.Println(slice)
-	if err != nil {
+	if err != nil{
+		logger.Log.Errorf("Can't get users from the cash: %v", err)
 		return nil, err
 	}
 
-	return slice, nil
+	err = json.Unmarshal([]byte(val), &users)
+	if err != nil {
+		logger.Log.Errorf("Can't unmarshal users from cash: %v", err)
+		return nil, err
+	}
+
+	return users, nil
 }
 
-func (r *redisClient) needChange(msg int)  ([]int, bool) {
-	slice, _ := r.Get()
-
-	for _, item := range slice {
-		if msg == item {
+func (r *redisClient) needChange(newId int) ([]int, bool) {
+	users, err := r.Get()
+	if err != nil{
+		return nil, false
+	}
+	for _, oldId := range users {
+		if newId == oldId {
 			return nil, false
 		}
 	}
-	return slice, true
+	return users, true
 }
