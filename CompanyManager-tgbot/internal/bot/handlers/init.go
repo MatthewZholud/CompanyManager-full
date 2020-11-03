@@ -9,7 +9,7 @@ type Handlers struct {
 	Bot          *tgbotapi.BotAPI
 	Redis        RedisRep
 	interService InterServiceRep
-	Active       map[int] *bot.Ch
+	Active       map[int] *bot.Channels
 }
 
 func NewHandlerService(botAPI *tgbotapi.BotAPI, redis RedisRep, interService InterServiceRep) Handlers {

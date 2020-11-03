@@ -7,12 +7,6 @@ import (
 
 type HandlersRep interface {
 	SwitchCommand(update *tgbotapi.Message)
-	GetCompaniesCommand(msg tgbotapi.MessageConfig, ch chan tgbotapi.MessageConfig)
-	UpdateCompanyCommand(msg tgbotapi.MessageConfig, ch chan tgbotapi.MessageConfig)
-	UpdateEmployeeCommand(msg tgbotapi.MessageConfig, ch chan tgbotapi.MessageConfig)
-	GetEmployeesCommand(msg tgbotapi.MessageConfig,  ch chan tgbotapi.MessageConfig)
-	EmployeeKeyboard(empl *presenter.Employee, msg tgbotapi.MessageConfig, ch chan *presenter.Employee)
-	CompanyKeyboard(comp *presenter.Company, msg tgbotapi.MessageConfig, ch chan *presenter.Company)
 }
 
 

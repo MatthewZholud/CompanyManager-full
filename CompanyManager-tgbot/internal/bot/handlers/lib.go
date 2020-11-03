@@ -8,7 +8,7 @@ import (
 )
 
 func IsNumericAndPositive(s string) bool {
-	i, err := strconv.ParseFloat(s, 64)
+	i, err := strconv.Atoi(s)
 	if err == nil && i >= 0 {
 		return true
 	} else {

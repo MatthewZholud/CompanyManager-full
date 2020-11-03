@@ -13,29 +13,27 @@ const (
 	EmployeeNotFound = "Employee not found"
 )
 
-func (u Handlers) GetEmployeesCommand(msg tgbotapi.MessageConfig,  ch chan tgbotapi.MessageConfig){
+func (u Handlers) getEmployeesCommand(msg tgbotapi.MessageConfig, ch chan tgbotapi.MessageConfig) {
 	response := u.interService.GetEmployees()
 	msg.Text = FormatEmployeeArr(response)
 	ch <- msg
 }
 
-
-func (u Handlers) UpdateEmployeeCommand(msg tgbotapi.MessageConfig, ch chan tgbotapi.MessageConfig){
+func (u Handlers) updateEmployeeCommand(msg tgbotapi.MessageConfig, ch chan tgbotapi.MessageConfig) {
 	mshChan1 := make(chan tgbotapi.Message, 1)
 
-	u.Active[int(msg.ChatID)] = &bot.Ch{
+	u.Active[int(msg.ChatID)] = &bot.Channels{
 		SimpleInput: mshChan1,
 		ButtonInput: nil,
 	}
 
-	msg1 := <- mshChan1
-	if !IsNumericAndPositive(msg1.Text){
+	msg1 := <-mshChan1
+	if !IsNumericAndPositive(msg1.Text) {
 		logger.Log.Debug("Data is not numeric and positive: %v")
 		msg.Text = "Please, try again\nInput is not correct"
 		ch <- msg
 		return
 	}
-
 
 	msg = tgbotapi.NewMessage(msg1.Chat.ID, msg1.Text)
 
@@ -48,37 +46,37 @@ func (u Handlers) UpdateEmployeeCommand(msg tgbotapi.MessageConfig, ch chan tgbo
 	}
 
 	oldEmployee := presenter.Employee{
-		ID: employee.ID,
-		Name: employee.Name,
+		ID:         employee.ID,
+		Name:       employee.Name,
 		SecondName: employee.SecondName,
-		Surname: employee.Surname,
-		Position: employee.Position,
-		PhotoUrl: employee.PhotoUrl,
-		HireDate: employee.HireDate,
-		CompanyID: employee.CompanyID,
+		Surname:    employee.Surname,
+		Position:   employee.Position,
+		PhotoUrl:   employee.PhotoUrl,
+		HireDate:   employee.HireDate,
+		CompanyID:  employee.CompanyID,
 	}
 
-	emplFromChan := make(chan *presenter.Employee, 1)
-	go u.EmployeeKeyboard(employee, msg, emplFromChan)
-	e := <- emplFromChan
+	employeeFromChan := make(chan *presenter.Employee, 1)
+	go u.employeeKeyboard(employee, msg, employeeFromChan)
+	newEmployee := <-employeeFromChan
 
-
-	if e == nil {
+	if newEmployee == nil {
+		logger.Log.Debugf("Break updating, user: %v", msg1.From.UserName)
 		msg.Text = "continue"
 		ch <- msg
 		return
 	}
 
-
-	if (oldEmployee.ID == employee.ID && oldEmployee.Name == employee.Name && oldEmployee.Surname == employee.Surname &&
-		oldEmployee.SecondName == employee.SecondName && oldEmployee.Position == employee.Position &&
-		oldEmployee.PhotoUrl == employee.Position && oldEmployee.CompanyID == employee.CompanyID) {
+	if oldEmployee.ID == newEmployee.ID && oldEmployee.Name == newEmployee.Name && oldEmployee.Surname == newEmployee.Surname &&
+			oldEmployee.SecondName == newEmployee.SecondName && oldEmployee.Position == newEmployee.Position &&
+			oldEmployee.PhotoUrl == newEmployee.Position && oldEmployee.CompanyID == newEmployee.CompanyID {
+		logger.Log.Debugf("User %v didn't change anything: %v", msg1.From.UserName)
 		msg.Text = "You didn't change anything:"
 		ch <- msg
 		return
 	}
 
-	response = u.interService.UpdateEmployee(e)
+	response = u.interService.UpdateEmployee(newEmployee)
 
 	if response != Success {
 		msg.Text = "Updating failed"
@@ -86,12 +84,12 @@ func (u Handlers) UpdateEmployeeCommand(msg tgbotapi.MessageConfig, ch chan tgbo
 		ch <- msg
 		return
 	} else {
-		msg.Text = fmt.Sprintf("Successful update\n\nNew Employee Info:\nEmployee ID: %v\nEmployee Name: %s\nEmployee Second " +
-			"Name: %s\nEmployee Surname: %s\nEmployee PhotoUrl:  %s\nEmployee Position: %s\n" +
+		msg.Text = fmt.Sprintf("Successful update\n\nNew Employee Info:\nEmployee ID: %v\nEmployee Name: %s\nEmployee Second "+
+			"Name: %s\nEmployee Surname: %s\nEmployee PhotoUrl:  %s\nEmployee Position: %s\n"+
 			"Employee CompanyID: %v",
-			e.ID, e.Name, e.SecondName, e.Surname, e.PhotoUrl, e.Position, e.CompanyID)
+			newEmployee.ID, newEmployee.Name, newEmployee.SecondName, newEmployee.Surname, newEmployee.PhotoUrl, newEmployee.Position, newEmployee.CompanyID)
 		//go u.NotifyAll(fmt.Sprintf("Employee with ID %v was updated.", e.ID))
-		logger.Log.Infof("Successful update")
+		logger.Log.Infof("Employee with ID %v was updated.\", e.ID")
 		ch <- msg
 		return
 	}

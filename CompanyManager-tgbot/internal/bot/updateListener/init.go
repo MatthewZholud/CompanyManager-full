@@ -1,14 +1,15 @@
 package updateListener
 
 import (
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/bot"
+	botDir "github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/bot"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/logger"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 type Updates struct {
-	Ch           tgbotapi.UpdatesChannel
-	Active       map[int] *bot.Ch
+	Ch     tgbotapi.UpdatesChannel
+	Active map[int]*botDir.Channels
 }
 
 func NewUpdateChan(botAPI *tgbotapi.BotAPI) Updates {
@@ -19,10 +20,10 @@ func NewUpdateChan(botAPI *tgbotapi.BotAPI) Updates {
 	if err != nil {
 		panic(err)
 	}
-	Active := bot.New()
+	StateChecker := botDir.New()
 	logger.Log.Info("New Update channel")
 	return Updates{
 		Ch:     ch,
-		Active: Active,
+		Active: StateChecker,
 	}
 }

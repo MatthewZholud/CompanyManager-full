@@ -5,12 +5,12 @@ import (
 	"sync"
 )
 
-type Ch struct {
+type Channels struct {
 	SimpleInput chan tgbotapi.Message
 	ButtonInput chan tgbotapi.CallbackQuery
 }
 
-type ActiveUsers map[int] *Ch
+type ActiveUsers map[int] *Channels
 
 var lock = &sync.Mutex{}
 
