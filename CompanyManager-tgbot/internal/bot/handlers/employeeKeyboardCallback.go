@@ -2,44 +2,53 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/bot"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/logger"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/presenter"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"strconv"
 )
 
+const (
+	EmployeeName       = "EmployeeName"
+	EmployeeSecondName = "EmployeeSecondName"
+	Surname            = "Surname"
+	PhotoUrl           = "PhotoUrl"
+	Position           = "Position"
+	CompanyID          = "CompanyID"
+	HireDate           = "HireDate"
+	Save               = "Save"
+	Break              = "Break"
+)
+
 var employeeNumericKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Employee Name", "EmployeeName"),
+		tgbotapi.NewInlineKeyboardButtonData("Employee Name", EmployeeName),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Employee Second Name", "EmployeeSecondName"),
+		tgbotapi.NewInlineKeyboardButtonData("Employee Second Name", EmployeeSecondName),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Employee Surname", "Surname"),
+		tgbotapi.NewInlineKeyboardButtonData("Employee Surname", Surname),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Employee PhotoUrl", "PhotoUrl"),
+		tgbotapi.NewInlineKeyboardButtonData("Employee PhotoUrl", PhotoUrl),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Employee Position", "Position"),
+		tgbotapi.NewInlineKeyboardButtonData("Employee Position", Position),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Employee CompanyID", "CompanyID"),
+		tgbotapi.NewInlineKeyboardButtonData("Employee CompanyID", CompanyID),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Save", "Save"),
+		tgbotapi.NewInlineKeyboardButtonData("Save", Save),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Break", "Break"),
+		tgbotapi.NewInlineKeyboardButtonData("Break", Break),
 	),
 )
 
-
-
 func (u Handlers) employeeKeyboard(empl *presenter.Employee, msg tgbotapi.MessageConfig, ch chan *presenter.Employee) {
-	oldEmployee := presenter.Employee{
+	oldEmployee := &presenter.Employee{
 		ID:         empl.ID,
 		Name:       empl.Name,
 		SecondName: empl.SecondName,
@@ -59,148 +68,179 @@ func (u Handlers) employeeKeyboard(empl *presenter.Employee, msg tgbotapi.Messag
 
 	msgChan := make(chan tgbotapi.CallbackQuery, 1)
 
-	u.Active[int(msg.ChatID)] = &bot.Channels{
-		SimpleInput: nil,
-		ButtonInput: msgChan,
-	}
+	u.Active[int(msg.ChatID)].ButtonInput = msgChan
 	msg1 := <-msgChan
-	u.Active[int(msg.ChatID)] = &bot.Channels{
-		SimpleInput: nil,
-		ButtonInput: nil,
-	}
+	u.Active[int(msg.ChatID)].ButtonInput = nil
+	u.switchEmployeeCallBack(msg1, oldEmployee, ch, msg)
+}
 
+func (u Handlers) switchEmployeeCallBack(msg1 tgbotapi.CallbackQuery, oldEmployee *presenter.Employee, ch chan *presenter.Employee, msg tgbotapi.MessageConfig) {
 	switch msg1.Data {
-	case "Break":
-		empl = nil
-		ch <- empl
+	case Break:
+		logger.Log.Debugf("User %v put button %v", msg1.From.UserName, msg1.Data)
+		oldEmployee = nil
+		ch <- oldEmployee
 		return
 
-	case "Save":
-		ch <- &oldEmployee
+	case Save:
+		logger.Log.Debugf("User %v put button %v", msg1.From.UserName, msg1.Data)
+		ch <- oldEmployee
 		return
 
-	case "EmployeeName":
+	case EmployeeName:
+		logger.Log.Debugf("User %v put button %v", msg1.From.UserName, msg1.Data)
+
 		msg.Text = "Enter new Employee Name:"
-		u.Bot.Send(msg)
+		_, err := u.Bot.Send(msg)
+		if err != nil {
+			logger.Log.Errorf("Can't send message to user: %v", err)
+			return
+		}
 		mshChan1 := make(chan tgbotapi.Message, 1)
-		u.Active[int(msg.ChatID)] = &bot.Channels{
-			SimpleInput: mshChan1,
-			ButtonInput: nil,
-		}
+		u.Active[int(msg.ChatID)].SimpleInput = mshChan1
 		msg1 := <-mshChan1
-		oldEmployee.Name = msg1.Text
-		u.Active[int(msg.ChatID)] = &bot.Channels{
-			SimpleInput: nil,
-			ButtonInput: nil,
+		if msg1.Text == oldEmployee.Name {
+			logger.Log.Debugf("Name has not been changed\n")
+		} else {
+			oldEmployee.Name = msg1.Text
+			logger.Log.Debugf("Company LegalForm with id %v changed to %v \n", oldEmployee.ID, oldEmployee.Name)
 		}
-		u.employeeKeyboard(&oldEmployee, msg, ch)
+		u.Active[int(msg.ChatID)].SimpleInput = nil
+		u.employeeKeyboard(oldEmployee, msg, ch)
 		return
 
-	case "EmployeeSecondName":
+	case EmployeeSecondName:
+		logger.Log.Debugf("User %v put button %v", msg1.From.UserName, msg1.Data)
 		msg.Text = "Enter new Employee Second Name:"
-		u.Bot.Send(msg)
+		_, err := u.Bot.Send(msg)
+		if err != nil {
+			logger.Log.Errorf("Can't send message to user: %v", err)
+			return
+		}
 
 		mshChan1 := make(chan tgbotapi.Message, 1)
-		u.Active[int(msg.ChatID)] = &bot.Channels{
-			SimpleInput: mshChan1,
-			ButtonInput: nil,
-		}
+		u.Active[int(msg.ChatID)].SimpleInput = mshChan1
 		msg1 := <-mshChan1
-		oldEmployee.SecondName = msg1.Text
-		u.Active[int(msg.ChatID)] = &bot.Channels{
-			SimpleInput: nil,
-			ButtonInput: nil,
+		if msg1.Text == oldEmployee.SecondName {
+			logger.Log.Debugf("Name has not been changed\n")
+		} else {
+			oldEmployee.SecondName = msg1.Text
+			logger.Log.Debugf("Company LegalForm with id %v changed to %v \n", oldEmployee.ID, oldEmployee.SecondName)
 		}
-		u.employeeKeyboard(&oldEmployee, msg, ch)
+		u.Active[int(msg.ChatID)].SimpleInput = nil
+		u.employeeKeyboard(oldEmployee, msg, ch)
 		return
 
-	case "Surname":
+	case Surname:
+		logger.Log.Debugf("User %v put button %v", msg1.From.UserName, msg1.Data)
 		msg.Text = "Enter new Employee Surname:"
-		u.Bot.Send(msg)
+		_, err := u.Bot.Send(msg)
+		if err != nil {
+			logger.Log.Errorf("Can't send message to user: %v", err)
+			return
+		}
 		mshChan1 := make(chan tgbotapi.Message, 1)
-		u.Active[int(msg.ChatID)] = &bot.Channels{
-			SimpleInput: mshChan1,
-			ButtonInput: nil,
-		}
+		u.Active[int(msg.ChatID)].SimpleInput = mshChan1
 		msg1 := <-mshChan1
-		oldEmployee.Surname = msg1.Text
-		u.Active[int(msg.ChatID)] = &bot.Channels{
-			SimpleInput: nil,
-			ButtonInput: nil,
+		if msg1.Text == oldEmployee.Surname {
+			logger.Log.Debugf("Name has not been changed\n")
+		} else {
+			oldEmployee.Surname = msg1.Text
+			logger.Log.Debugf("Company LegalForm with id %v changed to %v \n", oldEmployee.ID, oldEmployee.Surname)
 		}
-		u.employeeKeyboard(&oldEmployee, msg, ch)
+		u.Active[int(msg.ChatID)].SimpleInput = nil
+		u.employeeKeyboard(oldEmployee, msg, ch)
 		return
 
-	case "PhotoUrl":
+	case PhotoUrl:
+
+		logger.Log.Debugf("User %v put button %v", msg1.From.UserName, msg1.Data)
 		msg.Text = "Enter new Photo Url:"
-		u.Bot.Send(msg)
+		_, err := u.Bot.Send(msg)
+		if err != nil {
+			logger.Log.Errorf("Can't send message to user: %v", err)
+			return
+		}
 		mshChan1 := make(chan tgbotapi.Message, 1)
-		u.Active[int(msg.ChatID)] = &bot.Channels{
-			SimpleInput: mshChan1,
-			ButtonInput: nil,
-		}
+		u.Active[int(msg.ChatID)].SimpleInput = mshChan1
 		msg1 := <-mshChan1
-		oldEmployee.PhotoUrl = msg1.Text
-		u.Active[int(msg.ChatID)] = &bot.Channels{
-			SimpleInput: nil,
-			ButtonInput: nil,
+		if msg1.Text == oldEmployee.PhotoUrl {
+			logger.Log.Debugf("Name has not been changed\n")
+		} else {
+			oldEmployee.PhotoUrl = msg1.Text
+			logger.Log.Debugf("Company LegalForm with id %v changed to %v \n", oldEmployee.ID, oldEmployee.PhotoUrl)
 		}
-		u.employeeKeyboard(&oldEmployee, msg, ch)
+		u.Active[int(msg.ChatID)].SimpleInput = nil
+		u.employeeKeyboard(oldEmployee, msg, ch)
 		return
 
-	case "HireDate":
+	case HireDate:
+
+		logger.Log.Debugf("User %v put button %v", msg1.From.UserName, msg1.Data)
 		msg.Text = "Enter new Hire Date:"
-		u.Bot.Send(msg)
+		_, err := u.Bot.Send(msg)
+		if err != nil {
+			logger.Log.Errorf("Can't send message to user: %v", err)
+			return
+		}
 		mshChan1 := make(chan tgbotapi.Message, 1)
-		u.Active[int(msg.ChatID)] = &bot.Channels{
-			SimpleInput: mshChan1,
-			ButtonInput: nil,
-		}
+		u.Active[int(msg.ChatID)].SimpleInput = mshChan1
 		msg1 := <-mshChan1
-		oldEmployee.HireDate = msg1.Text
-		u.Active[int(msg.ChatID)] = &bot.Channels{
-			SimpleInput: nil,
-			ButtonInput: nil,
+		if msg1.Text == oldEmployee.HireDate {
+			logger.Log.Debugf("Name has not been changed\n")
+		} else {
+			oldEmployee.HireDate = msg1.Text
+			logger.Log.Debugf("Company LegalForm with id %v changed to %v \n", oldEmployee.ID, oldEmployee.HireDate)
 		}
-		u.employeeKeyboard(&oldEmployee, msg, ch)
+		u.Active[int(msg.ChatID)].SimpleInput = nil
+		u.employeeKeyboard(oldEmployee, msg, ch)
 		return
 
-	case "Position":
+	case Position:
+
+		logger.Log.Debugf("User %v put button %v", msg1.From.UserName, msg1.Data)
 		msg.Text = "Enter new Position:"
-		u.Bot.Send(msg)
+		_, err := u.Bot.Send(msg)
+		if err != nil {
+			logger.Log.Errorf("Can't send message to user: %v", err)
+			return
+		}
 		mshChan1 := make(chan tgbotapi.Message, 1)
-		u.Active[int(msg.ChatID)] = &bot.Channels{
-			SimpleInput: mshChan1,
-			ButtonInput: nil,
-		}
+		u.Active[int(msg.ChatID)].SimpleInput = mshChan1
 		msg1 := <-mshChan1
-		oldEmployee.Position = msg1.Text
-		u.Active[int(msg.ChatID)] = &bot.Channels{
-			SimpleInput: nil,
-			ButtonInput: nil,
+		if msg1.Text == oldEmployee.Position {
+			logger.Log.Debugf("Name has not been changed\n")
+		} else {
+			oldEmployee.Position = msg1.Text
+			logger.Log.Debugf("Company LegalForm with id %v changed to %v \n", oldEmployee.ID, oldEmployee.Position)
 		}
-		u.employeeKeyboard(&oldEmployee, msg, ch)
+		u.Active[int(msg.ChatID)].SimpleInput = nil
+		u.employeeKeyboard(oldEmployee, msg, ch)
 		return
 
-	case "CompanyID":
+	case CompanyID:
+		logger.Log.Debugf("User %v put button %v", msg1.From.UserName, msg1.Data)
+
 		msg.Text = "Enter new Company ID:"
-		u.Bot.Send(msg)
-		mshChan1 := make(chan tgbotapi.Message, 1)
-		u.Active[int(msg.ChatID)] = &bot.Channels{
-			SimpleInput: mshChan1,
-			ButtonInput: nil,
+		_, err := u.Bot.Send(msg)
+		if err != nil {
+			logger.Log.Errorf("Can't send message to user: %v", err)
+			return
 		}
+		mshChan1 := make(chan tgbotapi.Message, 1)
+		u.Active[int(msg.ChatID)].SimpleInput = mshChan1
 		msg1 := <-mshChan1
 
 		if !IsNumericAndPositive(msg1.Text) {
 			logger.Log.Debug("Data is not numeric and positive: %v")
 			msg.Text = "Please, try again\nInput is not correct"
-			u.Bot.Send(msg)
-			u.Active[int(msg.ChatID)] = &bot.Channels{
-				SimpleInput: nil,
-				ButtonInput: nil,
+			_, err := u.Bot.Send(msg)
+			if err != nil {
+				logger.Log.Errorf("Can't send message to user: %v", err)
+				return
 			}
-			u.employeeKeyboard(&oldEmployee, msg, ch)
+			u.Active[int(msg.ChatID)].SimpleInput = nil
+			u.employeeKeyboard(oldEmployee, msg, ch)
 			return
 		}
 
@@ -209,28 +249,32 @@ func (u Handlers) employeeKeyboard(empl *presenter.Employee, msg tgbotapi.Messag
 
 		if response == CompanyNotFound {
 			msg.Text = "Please, try again\nCompany with such ID not found"
-			u.Bot.Send(msg)
-			logger.Log.Info("Company not found")
-			u.Active[int(msg.ChatID)] = &bot.Channels{
-				SimpleInput: nil,
-				ButtonInput: nil,
+			_, err := u.Bot.Send(msg)
+			if err != nil {
+				logger.Log.Errorf("Can't send message to user: %v", err)
+				return
 			}
-			u.employeeKeyboard(&oldEmployee, msg, ch)
+			logger.Log.Info("Company not found")
+			u.Active[int(msg.ChatID)].SimpleInput = nil
+			u.employeeKeyboard(oldEmployee, msg, ch)
 			return
 		}
 
 		id, _ := strconv.Atoi(msg1.Text)
-
-		oldEmployee.CompanyID = int64(id)
-		u.Active[int(msg.ChatID)] = &bot.Channels{
-			SimpleInput: nil,
-			ButtonInput: nil,
+		if int64(id) == oldEmployee.CompanyID {
+			logger.Log.Debugf("Name has not been changed\n")
+		} else {
+			oldEmployee.CompanyID = int64(id)
+			logger.Log.Debugf("Company LegalForm with id %v changed to %v \n", oldEmployee.ID, oldEmployee.CompanyID)
 		}
-		u.employeeKeyboard(&oldEmployee, msg, ch)
+		u.Active[int(msg.ChatID)].SimpleInput = nil
+		u.employeeKeyboard(oldEmployee, msg, ch)
 		return
 
 	default:
+		logger.Log.Debugf("User %v put unknown button", msg1.From.UserName)
+		oldEmployee = nil
+		ch <- oldEmployee
 		return
 	}
-
 }

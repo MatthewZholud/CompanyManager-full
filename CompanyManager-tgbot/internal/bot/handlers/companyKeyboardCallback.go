@@ -7,18 +7,23 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+const (
+	CompanyName = "CompanyName"
+	CompanyLegalForm = "CompanyLegalForm"
+)
+
 var companyNumericKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Company Name", "CompanyName"),
+		tgbotapi.NewInlineKeyboardButtonData("Company Name", CompanyName),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Company Legal form", "CompanyLegalForm"),
+		tgbotapi.NewInlineKeyboardButtonData("Company Legal form", CompanyLegalForm),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Save", "Save"),
+		tgbotapi.NewInlineKeyboardButtonData("Save", Save),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Break", "Break"),
+		tgbotapi.NewInlineKeyboardButtonData("Break", Break),
 	),
 )
 
@@ -43,25 +48,25 @@ func (u Handlers) companyKeyboard(comp *presenter.Company, msg tgbotapi.MessageC
 	msg1 := <-msgChan
 	u.Active[int(msg.ChatID)].ButtonInput = nil
 
-	u.SwitchCallBack(msg1, oldCompany, ch, msg)
+	u.switchCompanyCallBack(msg1, oldCompany, ch, msg)
 
 }
 
-func (u Handlers) SwitchCallBack(msg1 tgbotapi.CallbackQuery, oldCompany *presenter.Company, ch chan *presenter.Company, msg tgbotapi.MessageConfig) {
+func (u Handlers) switchCompanyCallBack(msg1 tgbotapi.CallbackQuery, oldCompany *presenter.Company, ch chan *presenter.Company, msg tgbotapi.MessageConfig) {
 
 	switch msg1.Data {
-	case "Break":
+	case Break:
 		logger.Log.Debugf("User %v put button %v", msg1.From.UserName, msg1.Data)
 		oldCompany = nil
 		ch <- oldCompany
 		return
 
-	case "Save":
+	case Save:
 		logger.Log.Debugf("User %v put button %v", msg1.From.UserName, msg1.Data)
 		ch <- oldCompany
 		return
 
-	case "CompanyName":
+	case CompanyName:
 		logger.Log.Debugf("User %v put button %v", msg1.From.UserName, msg1.Data)
 
 		msg.Text = "Enter new Company Name:"
@@ -74,7 +79,7 @@ func (u Handlers) SwitchCallBack(msg1 tgbotapi.CallbackQuery, oldCompany *presen
 		u.Active[int(msg.ChatID)].SimpleInput = mshChan1
 		msg1 := <-mshChan1
 		if msg1.Text == oldCompany.Name {
-			logger.Log.Debugf("Name has not benn changed\n")
+			logger.Log.Debugf("Name has not been changed\n")
 		} else {
 			oldCompany.Name = msg1.Text
 			logger.Log.Debugf("Company name with id %v changed to %v \n", oldCompany.ID, oldCompany.Name)
@@ -83,7 +88,7 @@ func (u Handlers) SwitchCallBack(msg1 tgbotapi.CallbackQuery, oldCompany *presen
 		u.companyKeyboard(oldCompany, msg, ch)
 		return
 
-	case "CompanyLegalForm":
+	case CompanyLegalForm:
 		logger.Log.Debugf("User %v put button %v", msg1.From.UserName, msg1.Data)
 
 		msg.Text = "Enter new Legal form:"
@@ -97,7 +102,7 @@ func (u Handlers) SwitchCallBack(msg1 tgbotapi.CallbackQuery, oldCompany *presen
 		msg1 := <-mshChan1
 		oldCompany.LegalForm = msg1.Text
 		if msg1.Text == oldCompany.LegalForm {
-			logger.Log.Debugf("Name has not benn changed\n")
+			logger.Log.Debugf("Name has not been changed\n")
 		} else {
 			oldCompany.LegalForm = msg1.Text
 			logger.Log.Debugf("Company LegalForm with id %v changed to %v \n", oldCompany.ID, oldCompany.LegalForm)
