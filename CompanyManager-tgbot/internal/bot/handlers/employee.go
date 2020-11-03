@@ -1,7 +1,8 @@
-package bot
+package handlers
 
 import (
 	"fmt"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/bot"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/logger"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/presenter"
 
@@ -12,17 +13,17 @@ const (
 	EmployeeNotFound = "Employee not found"
 )
 
-func (u Updates) GetEmployeesCommand(msg tgbotapi.MessageConfig,  ch chan tgbotapi.MessageConfig){
+func (u Handlers) GetEmployeesCommand(msg tgbotapi.MessageConfig,  ch chan tgbotapi.MessageConfig){
 	response := u.interService.GetEmployees()
 	msg.Text = FormatEmployeeArr(response)
 	ch <- msg
 }
 
 
-func (u Updates) UpdateEmployeeCommand(msg tgbotapi.MessageConfig, ch chan tgbotapi.MessageConfig){
+func (u Handlers) UpdateEmployeeCommand(msg tgbotapi.MessageConfig, ch chan tgbotapi.MessageConfig){
 	mshChan1 := make(chan tgbotapi.Message, 1)
 
-	u.Active[int(msg.ChatID)] = &Ch{
+	u.Active[int(msg.ChatID)] = &bot.Ch{
 		SimpleInput: mshChan1,
 		ButtonInput: nil,
 	}
@@ -89,7 +90,7 @@ func (u Updates) UpdateEmployeeCommand(msg tgbotapi.MessageConfig, ch chan tgbot
 			"Name: %s\nEmployee Surname: %s\nEmployee PhotoUrl:  %s\nEmployee Position: %s\n" +
 			"Employee CompanyID: %v",
 			e.ID, e.Name, e.SecondName, e.Surname, e.PhotoUrl, e.Position, e.CompanyID)
-		go u.NotifyAll(fmt.Sprintf("Employee with ID %v was updated.", e.ID))
+		//go u.NotifyAll(fmt.Sprintf("Employee with ID %v was updated.", e.ID))
 		logger.Log.Infof("Successful update")
 		ch <- msg
 		return

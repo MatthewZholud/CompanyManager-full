@@ -11,9 +11,9 @@ func ProfilingServer()  {
 	RegisterProfilingRoutes(r)
 	err := http.ListenAndServe(":8006", r)
 	if err != nil {
-		logger.Log.Fatal("Can't connect to profiling server:", err)
+		logger.Log.Fatal("Can't connect to profiling botServer:", err)
 	} else {
-		logger.Log.Info("Connected to profiling server")
+		logger.Log.Info("Connected to profiling botServer")
 	}
 }
 

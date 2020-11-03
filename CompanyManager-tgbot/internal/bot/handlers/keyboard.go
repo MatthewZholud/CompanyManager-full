@@ -1,7 +1,8 @@
-package bot
+package handlers
 
 import (
 	"fmt"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/bot"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/logger"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/presenter"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -50,7 +51,7 @@ var employeeNumericKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	),
 )
 
-func (u Updates) CompanyKeyboard(comp *presenter.Company, msg tgbotapi.MessageConfig, ch chan *presenter.Company) {
+func (u Handlers) CompanyKeyboard(comp *presenter.Company, msg tgbotapi.MessageConfig, ch chan *presenter.Company) {
 	oldCompany := presenter.Company{
 		ID:        comp.ID,
 		Name:      comp.Name,
@@ -63,12 +64,12 @@ func (u Updates) CompanyKeyboard(comp *presenter.Company, msg tgbotapi.MessageCo
 	msg.ReplyMarkup = nil
 	msgChan := make(chan tgbotapi.CallbackQuery, 1)
 
-	u.Active[int(msg.ChatID)] = &Ch{
+	u.Active[int(msg.ChatID)] = &bot.Ch{
 		SimpleInput: nil,
 		ButtonInput: msgChan,
 	}
 	msg1 := <-msgChan
-	u.Active[int(msg.ChatID)] = &Ch{
+	u.Active[int(msg.ChatID)] = &bot.Ch{
 		SimpleInput: nil,
 		ButtonInput: nil,
 	}
@@ -87,13 +88,13 @@ func (u Updates) CompanyKeyboard(comp *presenter.Company, msg tgbotapi.MessageCo
 		msg.Text = "Enter new Company Name:"
 		u.Bot.Send(msg)
 		mshChan1 := make(chan tgbotapi.Message, 1)
-		u.Active[int(msg.ChatID)] = &Ch{
+		u.Active[int(msg.ChatID)] = &bot.Ch{
 			SimpleInput: mshChan1,
 			ButtonInput: nil,
 		}
 		msg1 := <-mshChan1
 		oldCompany.Name = msg1.Text
-		u.Active[int(msg.ChatID)] = &Ch{
+		u.Active[int(msg.ChatID)] = &bot.Ch{
 			SimpleInput: nil,
 			ButtonInput: nil,
 		}
@@ -104,13 +105,13 @@ func (u Updates) CompanyKeyboard(comp *presenter.Company, msg tgbotapi.MessageCo
 		msg.Text = "Enter new Legal form:"
 		u.Bot.Send(msg)
 		mshChan1 := make(chan tgbotapi.Message, 1)
-		u.Active[int(msg.ChatID)] = &Ch{
+		u.Active[int(msg.ChatID)] = &bot.Ch{
 			SimpleInput: mshChan1,
 			ButtonInput: nil,
 		}
 		msg1 := <-mshChan1
 		oldCompany.LegalForm = msg1.Text
-		u.Active[int(msg.ChatID)] = &Ch{
+		u.Active[int(msg.ChatID)] = &bot.Ch{
 			SimpleInput: nil,
 			ButtonInput: nil,
 		}
@@ -122,7 +123,7 @@ func (u Updates) CompanyKeyboard(comp *presenter.Company, msg tgbotapi.MessageCo
 	}
 }
 
-func (u Updates) EmployeeKeyboard(empl *presenter.Employee, msg tgbotapi.MessageConfig, ch chan *presenter.Employee) {
+func (u Handlers) EmployeeKeyboard(empl *presenter.Employee, msg tgbotapi.MessageConfig, ch chan *presenter.Employee) {
 	oldEmployee := presenter.Employee{
 		ID:         empl.ID,
 		Name:       empl.Name,
@@ -143,12 +144,12 @@ func (u Updates) EmployeeKeyboard(empl *presenter.Employee, msg tgbotapi.Message
 
 	msgChan := make(chan tgbotapi.CallbackQuery, 1)
 
-	u.Active[int(msg.ChatID)] = &Ch{
+	u.Active[int(msg.ChatID)] = &bot.Ch{
 		SimpleInput: nil,
 		ButtonInput: msgChan,
 	}
 	msg1 := <-msgChan
-	u.Active[int(msg.ChatID)] = &Ch{
+	u.Active[int(msg.ChatID)] = &bot.Ch{
 		SimpleInput: nil,
 		ButtonInput: nil,
 	}
@@ -167,13 +168,13 @@ func (u Updates) EmployeeKeyboard(empl *presenter.Employee, msg tgbotapi.Message
 		msg.Text = "Enter new Employee Name:"
 		u.Bot.Send(msg)
 		mshChan1 := make(chan tgbotapi.Message, 1)
-		u.Active[int(msg.ChatID)] = &Ch{
+		u.Active[int(msg.ChatID)] = &bot.Ch{
 			SimpleInput: mshChan1,
 			ButtonInput: nil,
 		}
 		msg1 := <-mshChan1
 		oldEmployee.Name = msg1.Text
-		u.Active[int(msg.ChatID)] = &Ch{
+		u.Active[int(msg.ChatID)] = &bot.Ch{
 			SimpleInput: nil,
 			ButtonInput: nil,
 		}
@@ -185,13 +186,13 @@ func (u Updates) EmployeeKeyboard(empl *presenter.Employee, msg tgbotapi.Message
 		u.Bot.Send(msg)
 
 		mshChan1 := make(chan tgbotapi.Message, 1)
-		u.Active[int(msg.ChatID)] = &Ch{
+		u.Active[int(msg.ChatID)] = &bot.Ch{
 			SimpleInput: mshChan1,
 			ButtonInput: nil,
 		}
 		msg1 := <-mshChan1
 		oldEmployee.SecondName = msg1.Text
-		u.Active[int(msg.ChatID)] = &Ch{
+		u.Active[int(msg.ChatID)] = &bot.Ch{
 			SimpleInput: nil,
 			ButtonInput: nil,
 		}
@@ -202,13 +203,13 @@ func (u Updates) EmployeeKeyboard(empl *presenter.Employee, msg tgbotapi.Message
 		msg.Text = "Enter new Employee Surname:"
 		u.Bot.Send(msg)
 		mshChan1 := make(chan tgbotapi.Message, 1)
-		u.Active[int(msg.ChatID)] = &Ch{
+		u.Active[int(msg.ChatID)] = &bot.Ch{
 			SimpleInput: mshChan1,
 			ButtonInput: nil,
 		}
 		msg1 := <-mshChan1
 		oldEmployee.Surname = msg1.Text
-		u.Active[int(msg.ChatID)] = &Ch{
+		u.Active[int(msg.ChatID)] = &bot.Ch{
 			SimpleInput: nil,
 			ButtonInput: nil,
 		}
@@ -219,13 +220,13 @@ func (u Updates) EmployeeKeyboard(empl *presenter.Employee, msg tgbotapi.Message
 		msg.Text = "Enter new Photo Url:"
 		u.Bot.Send(msg)
 		mshChan1 := make(chan tgbotapi.Message, 1)
-		u.Active[int(msg.ChatID)] = &Ch{
+		u.Active[int(msg.ChatID)] = &bot.Ch{
 			SimpleInput: mshChan1,
 			ButtonInput: nil,
 		}
 		msg1 := <-mshChan1
 		oldEmployee.PhotoUrl = msg1.Text
-		u.Active[int(msg.ChatID)] = &Ch{
+		u.Active[int(msg.ChatID)] = &bot.Ch{
 			SimpleInput: nil,
 			ButtonInput: nil,
 		}
@@ -236,13 +237,13 @@ func (u Updates) EmployeeKeyboard(empl *presenter.Employee, msg tgbotapi.Message
 		msg.Text = "Enter new Hire Date:"
 		u.Bot.Send(msg)
 		mshChan1 := make(chan tgbotapi.Message, 1)
-		u.Active[int(msg.ChatID)] = &Ch{
+		u.Active[int(msg.ChatID)] = &bot.Ch{
 			SimpleInput: mshChan1,
 			ButtonInput: nil,
 		}
 		msg1 := <-mshChan1
 		oldEmployee.HireDate = msg1.Text
-		u.Active[int(msg.ChatID)] = &Ch{
+		u.Active[int(msg.ChatID)] = &bot.Ch{
 			SimpleInput: nil,
 			ButtonInput: nil,
 		}
@@ -253,13 +254,13 @@ func (u Updates) EmployeeKeyboard(empl *presenter.Employee, msg tgbotapi.Message
 		msg.Text = "Enter new Position:"
 		u.Bot.Send(msg)
 		mshChan1 := make(chan tgbotapi.Message, 1)
-		u.Active[int(msg.ChatID)] = &Ch{
+		u.Active[int(msg.ChatID)] = &bot.Ch{
 			SimpleInput: mshChan1,
 			ButtonInput: nil,
 		}
 		msg1 := <-mshChan1
 		oldEmployee.Position = msg1.Text
-		u.Active[int(msg.ChatID)] = &Ch{
+		u.Active[int(msg.ChatID)] = &bot.Ch{
 			SimpleInput: nil,
 			ButtonInput: nil,
 		}
@@ -270,7 +271,7 @@ func (u Updates) EmployeeKeyboard(empl *presenter.Employee, msg tgbotapi.Message
 		msg.Text = "Enter new Company ID:"
 		u.Bot.Send(msg)
 		mshChan1 := make(chan tgbotapi.Message, 1)
-		u.Active[int(msg.ChatID)] = &Ch{
+		u.Active[int(msg.ChatID)] = &bot.Ch{
 			SimpleInput: mshChan1,
 			ButtonInput: nil,
 		}
@@ -280,7 +281,7 @@ func (u Updates) EmployeeKeyboard(empl *presenter.Employee, msg tgbotapi.Message
 			logger.Log.Debug("Data is not numeric and positive: %v")
 			msg.Text = "Please, try again\nInput is not correct"
 			u.Bot.Send(msg)
-			u.Active[int(msg.ChatID)] = &Ch{
+			u.Active[int(msg.ChatID)] = &bot.Ch{
 				SimpleInput: nil,
 				ButtonInput: nil,
 			}
@@ -295,7 +296,7 @@ func (u Updates) EmployeeKeyboard(empl *presenter.Employee, msg tgbotapi.Message
 			msg.Text = "Please, try again\nCompany with such ID not found"
 			u.Bot.Send(msg)
 			logger.Log.Info("Company not found")
-			u.Active[int(msg.ChatID)] = &Ch{
+			u.Active[int(msg.ChatID)] = &bot.Ch{
 				SimpleInput: nil,
 				ButtonInput: nil,
 			}
@@ -306,7 +307,7 @@ func (u Updates) EmployeeKeyboard(empl *presenter.Employee, msg tgbotapi.Message
 		id, _ := strconv.Atoi(msg1.Text)
 
 		oldEmployee.CompanyID = int64(id)
-		u.Active[int(msg.ChatID)] = &Ch{
+		u.Active[int(msg.ChatID)] = &bot.Ch{
 			SimpleInput: nil,
 			ButtonInput: nil,
 		}

@@ -30,6 +30,6 @@ func main() {
 	//profiling.RegisterCompanyRoutes(r)
 	err := http.ListenAndServe(apiGatewayPort, r)
 	if err != nil {
-		logger.Log.Fatal("Can't connect to server: ", err)
+		logger.Log.Fatal("Can't connect to botServer: ", err)
 	}
 }

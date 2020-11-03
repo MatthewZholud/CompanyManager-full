@@ -1,4 +1,4 @@
-package server
+package botServer
 
 import (
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/logger"

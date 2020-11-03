@@ -1,7 +1,8 @@
-package bot
+package handlers
 
 import (
 	"fmt"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/bot"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/logger"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-tgbot/internal/presenter"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -12,17 +13,17 @@ const (
 	Success = "Successful update"
 )
 
-func (u Updates) GetCompaniesCommand(msg tgbotapi.MessageConfig, ch chan tgbotapi.MessageConfig){
+func (u Handlers) GetCompaniesCommand(msg tgbotapi.MessageConfig, ch chan tgbotapi.MessageConfig){
 	response := u.interService.GetCompanies()
 	msg.Text = FormatCompanyArr(response)
 	ch <- msg
 }
 
 
-func (u Updates) UpdateCompanyCommand(msg tgbotapi.MessageConfig, ch chan tgbotapi.MessageConfig){
+func (u Handlers) UpdateCompanyCommand(msg tgbotapi.MessageConfig, ch chan tgbotapi.MessageConfig){
 	mshChan1 := make(chan tgbotapi.Message, 1)
 
-	u.Active[int(msg.ChatID)] = &Ch{
+	u.Active[int(msg.ChatID)] = &bot.Ch{
 		SimpleInput: mshChan1,
 		ButtonInput: nil,
 	}
@@ -82,7 +83,7 @@ func (u Updates) UpdateCompanyCommand(msg tgbotapi.MessageConfig, ch chan tgbota
 	} else {
 		msg.Text = fmt.Sprintf("Successful update\n\nNew Company Info:\nCompany ID: %v\nCompany Name: %s\nCompany Legal form: %s",
 			c.ID, c.Name, c.LegalForm)
-		go u.NotifyAll(fmt.Sprintf("Company with ID %v was updated.", c.ID))
+		//go u.NotifyAll(fmt.Sprintf("Company with ID %v was updated.", c.ID))
 		logger.Log.Infof("Successful update")
 		ch <- msg
 		return
