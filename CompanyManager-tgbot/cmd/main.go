@@ -16,7 +16,6 @@ func main() {
 	newBot := botServer.StartBot()
 	kafka := kafka.Initialize()
 
-
 	interService := interService.Initialize(kafka)
 
 	botHandlerService := handlers.NewHandlerService(newBot.BotAPI, redis, interService)

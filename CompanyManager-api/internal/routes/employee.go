@@ -8,6 +8,8 @@ import (
 	"net/http"
 )
 
+//todo: mzh: why return the parameter that you received in funtion call?
+//todo: mzh: same to other registering functions
 func RegisterEmployeeRoutes(r *mux.Router, empl handlers.EmployeeRep) *mux.Router {
 	logger.Log.Infof("Ready to process employee requests ")
 	r.HandleFunc("/employee", empl.CreateEmployee()).Methods(http.MethodPost)

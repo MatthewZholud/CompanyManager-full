@@ -45,6 +45,8 @@ func (c *companyService) CreateCompany() http.HandlerFunc {
 			Legalform string `json:"legal_form"`
 		}
 
+		//todo: mzh: what HTTP response would be returned in case of error?
+
 		err := json.NewDecoder(r.Body).Decode(&input)
 		if err != nil {
 			logger.Log.Errorf("Can't get company struct from body: %v", err)
@@ -57,6 +59,7 @@ func (c *companyService) CreateCompany() http.HandlerFunc {
 			respondWithError(w, errorMessage)
 			return
 		}
+		//todo: mzh: Clean architecture + SRP violation. HTTP handler handles broker's request-reply logic
 		byteUUID, err := c.kafka.KafkaSend(comp, CompanyPOSTRequest)
 		if err != nil {
 			logger.Log.Errorf("Error sending message to env: %v", err)
@@ -69,12 +72,14 @@ func (c *companyService) CreateCompany() http.HandlerFunc {
 			logger.Log.Errorf("Error sending message to env: %v", err)
 			return
 		}
+		// todo: mzh: why parse kafka message here? SRP violation
 		id, err  := ByteToInt64(msg)
 		if err != nil {
 			respondWithError(w, errorMessage)
 			logger.Log.Errorf("Can't convert byte to int: %v", err)
 			return
 		}
+		//todo: mzh: strange naming of var
 		toJ := &presenter.Company{
 			ID:        id,
 			Name:      input.Name,

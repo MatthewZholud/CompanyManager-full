@@ -14,6 +14,7 @@ import (
 )
 
 const (
+	//todo: mzh: hardcoded port
 	apiGatewayPort   = ":8005"
 )
 
@@ -30,6 +31,7 @@ func main() {
 	//profiling.RegisterCompanyRoutes(r)
 	err := http.ListenAndServe(apiGatewayPort, r)
 	if err != nil {
+		//todo: mzh: very strange log message
 		logger.Log.Fatal("Can't connect to botServer: ", err)
 	}
 }
