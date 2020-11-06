@@ -49,12 +49,12 @@ func (i *interService) GetCompany(id string) (*presenter.Company, string) {
 
 	byteUUID, err := i.kafka.KafkaSend([]byte(id), CompanyGETRequest)
 	if err != nil {
-		logger.Log.Errorf("Error sending message to kafka: %v", err)
+		logger.Log.Errorf("Error sending message to MessageBroker: %v", err)
 		return nil, Error
 	}
 	msg, err := i.kafka.KafkaGet(CompanyGETResponse, byteUUID)
 	if err != nil {
-		logger.Log.Errorf("Error sending message to kafka: %v", err)
+		logger.Log.Errorf("Error sending message to MessageBroker: %v", err)
 		return nil, Error
 	} else if string(msg) == CompanyNotFound {
 		return nil, string(msg)
@@ -72,17 +72,17 @@ func (i *interService) UpdateCompany(company *presenter.Company) string {
 	defer mutex.Unlock()
 	comp, err := json.Marshal(company)
 	if err != nil {
-		logger.Log.Errorf("Can't prepare company struct for sending to kafka: %v", err)
+		logger.Log.Errorf("Can't prepare company struct for sending to MessageBroker: %v", err)
 		return Error
 	}
 	byteUUID, err := i.kafka.KafkaSend(comp, CompanyPUTRequest)
 	if err != nil {
-		logger.Log.Errorf("Error sending message to kafka: %v", err)
+		logger.Log.Errorf("Error sending message to MessageBroker: %v", err)
 		return Error
 	}
 	msg, err := i.kafka.KafkaGet(CompanyPUTResponse, byteUUID)
 	if err != nil {
-		logger.Log.Errorf("Error sending message to kafka: %v", err)
+		logger.Log.Errorf("Error sending message to MessageBroker: %v", err)
 		return Error
 	}
 	return string(msg)

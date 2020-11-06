@@ -30,6 +30,6 @@ func (k *kafkaClient) KafkaSend(str, Key []byte, topic string) {
 	if err != nil {
 		logger.Log.Fatalf("Can't read messages from Kafka with topic %v: %v", topic, err)
 	} else {
-		logger.Log.Infof("Sent message to kafka, topic: %v", topic)
+		logger.Log.Infof("Sent message to MessageBroker, topic: %v", topic)
 	}
 }

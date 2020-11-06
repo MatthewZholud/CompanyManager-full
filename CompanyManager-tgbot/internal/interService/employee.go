@@ -49,12 +49,12 @@ func (i *interService) GetEmployee(id string) (*presenter.Employee, string) {
 
 	byteUUID, err := i.kafka.KafkaSend([]byte(id), EmployeeGETRequest)
 	if err != nil {
-		logger.Log.Errorf("Error sending message to kafka: %v", err)
+		logger.Log.Errorf("Error sending message to MessageBroker: %v", err)
 		return nil, Error
 	}
 	msg, err := i.kafka.KafkaGet(EmployeeGETResponse, byteUUID)
 	if err != nil {
-		logger.Log.Errorf("Error sending message to kafka: %v", err)
+		logger.Log.Errorf("Error sending message to MessageBroker: %v", err)
 		return nil, Error
 	} else if string(msg) == EmployeeNotFound {
 		return nil, string(msg)
@@ -72,17 +72,17 @@ func (i *interService) UpdateEmployee(employee *presenter.Employee) string {
 	defer mutex.Unlock()
 	comp, err := json.Marshal(employee)
 	if err != nil {
-		logger.Log.Errorf("Can't prepare employee struct for sending to kafka: %v", err)
+		logger.Log.Errorf("Can't prepare employee struct for sending to MessageBroker: %v", err)
 		return Error
 	}
 	byteUUID, err := i.kafka.KafkaSend(comp, EmployeePUTRequest)
 	if err != nil {
-		logger.Log.Errorf("Error sending message to kafka: %v", err)
+		logger.Log.Errorf("Error sending message to MessageBroker: %v", err)
 		return Error
 	}
 	msg, err := i.kafka.KafkaGet(EmployeePUTResponse, byteUUID)
 	if err != nil {
-		logger.Log.Errorf("Error sending message to kafka: %v", err)
+		logger.Log.Errorf("Error sending message to MessageBroker: %v", err)
 		return Error
 	}
 	return string(msg)

@@ -39,7 +39,7 @@ services:
     env_file:
       - env/.env
     environment:
-      - "KAFKA_BROKERS=kafka:9092"
+      - "KAFKA_BROKERS=MessageBroker:9092"
       - "BROADCAST=false"
     depends_on:
       - kafka
@@ -54,7 +54,7 @@ services:
     env_file:
       - env/.env
     environment:
-      - "KAFKA_BROKERS=kafka:9092"
+      - "KAFKA_BROKERS=MessageBroker:9092"
       - "BROADCAST=false"
     depends_on:
       - kafka
@@ -68,7 +68,7 @@ services:
     env_file:
       - env/tgbot-variables.env
     environment:
-      - "KAFKA_BROKERS=kafka:9092"
+      - "KAFKA_BROKERS=MessageBroker:9092"
       - "BROADCAST=false"
     links:
       - redis

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/kafka"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/logger"
 	"strconv"
 
@@ -13,41 +12,21 @@ import (
 	"net/http"
 )
 
-const (
-	EmployeeGETRequest     = "EmployeeGETRequest"
-	EmployeePOSTRequest    = "EmployeePOSTRequest"
-	EmployeePUTRequest     = "EmployeePUTRequest"
-	EmployeeDeleteRequest  = "EmployeeDeleteRequest"
-	EmployeeGETResponse    = "EmployeeGETResponse"
-	EmployeePOSTResponse   = "EmployeePOSTResponse"
-	EmployeePUTResponse    = "EmployeePUTResponse"
-	EmployeeDeleteResponse = "EmployeeDeleteResponse"
-)
-
 type employeeService struct {
-	kafka kafka.KafkaRep
+	interServiceEmpl InterServiceEmployee
 }
 
-func InitializeEmployee(kafka kafka.KafkaRep) *employeeService {
+func InitializeEmployee(interService InterServiceEmployee) *employeeService {
 	return &employeeService{
-		kafka: kafka,
+		interServiceEmpl: interService,
 	}
 }
 
 func (e *employeeService) CreateEmployee() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-
 		errorMessage := "Error adding employee"
-		var input struct {
-			Name       string `json:"name"`
-			SecondName string `json:"second_name"`
-			Surname    string `json:"surname"`
-			PhotoUrl   string `json:"photo_url"`
-			HireDate   string `json:"hire_date"`
-			Position   string `json:"position"`
-			CompanyID  int64  `json:"company_id"`
-		}
+		var input presenter.Employee
 
 		err := json.NewDecoder(r.Body).Decode(&input)
 		if err != nil {
@@ -55,31 +34,13 @@ func (e *employeeService) CreateEmployee() http.HandlerFunc {
 			respondWithError(w, errorMessage)
 			return
 		}
-		empl, err := json.Marshal(input)
+		id, err := e.interServiceEmpl.CreateEmployee(&input)
 		if err != nil {
-			logger.Log.Errorf("Can't prepare company struct for sending to env: %v", err)
+			logger.Log.Errorf("Creating failed: %v", err)
 			respondWithError(w, errorMessage)
 			return
 		}
-		byteUUID, err := e.kafka.KafkaSend(empl, EmployeePOSTRequest)
-		if err != nil {
-			logger.Log.Errorf("Error sending message to env: %v", err)
-			respondWithError(w, errorMessage)
-			return
-		}
-		msg, err := e.kafka.KafkaGet(EmployeePOSTResponse, byteUUID)
-		if err != nil {
-			logger.Log.Errorf("Error sending message to env: %v", err)
-			respondWithError(w, errorMessage)
-			return
-		}
-		id, err := ByteToInt64(msg)
-		if err != nil {
-			respondWithError(w, errorMessage)
-			logger.Log.Errorf("Can't convert byte to int: %v", err)
-			return
-		}
-		toJ := &presenter.Employee{
+		createdEmployee := &presenter.Employee{
 			ID:         id,
 			Name:       input.Name,
 			SecondName: input.SecondName,
@@ -91,7 +52,7 @@ func (e *employeeService) CreateEmployee() http.HandlerFunc {
 		}
 
 		w.WriteHeader(http.StatusCreated)
-		if err := json.NewEncoder(w).Encode(toJ); err != nil {
+		if err := json.NewEncoder(w).Encode(createdEmployee); err != nil {
 			logger.Log.Errorf("Can't display: %v", err)
 			respondWithError(w, errorMessage)
 			return
@@ -105,27 +66,20 @@ func (e *employeeService) GetEmployee() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		errorMessage := "Error reading employees"
-		var employee *presenter.Employee
-		byteUUID, err := e.kafka.KafkaSend([]byte(mux.Vars(r)["id"]), EmployeeGETRequest)
-		if err != nil {
-			logger.Log.Errorf("Error sending message to env: %v", err)
+		if IsNumericAndPositive(mux.Vars(r)["id"]) != true {
+			logger.Log.Errorf("Id is not numeric and positive: %v")
 			respondWithError(w, errorMessage)
 			return
 		}
-		msg, err := e.kafka.KafkaGet(EmployeeGETResponse, byteUUID)
+		id := mux.Vars(r)["id"]
+		employee, err := e.interServiceEmpl.GetEmployee(id)
 		if err != nil {
-			logger.Log.Errorf("Error sending message to env: %v", err)
+			logger.Log.Errorf("Error getting employee: %v", err)
 			respondWithError(w, errorMessage)
-			return
 		}
-		employee, err = JsonToEmployee(msg)
-		if err != nil {
-			logger.Log.Errorf("Can't convert json to employee struct: %v", err)
-			respondWithError(w, errorMessage)
-			return
-		}
+
 		if err := json.NewEncoder(w).Encode(employee); err != nil {
-			logger.Log.Errorf("Can't display: %v", err)
+			logger.Log.Errorf("Can't display employee: %v", err)
 			respondWithError(w, errorMessage)
 			return
 		} else {
@@ -138,24 +92,20 @@ func (e *employeeService) DeleteEmployee() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		errorMessage := "Error deleting employee"
-		byteUUID, err := e.kafka.KafkaSend([]byte(mux.Vars(r)["id"]), EmployeeDeleteRequest)
-		if err != nil {
-			logger.Log.Errorf("Error sending message to env: %v", err)
+		if IsNumericAndPositive(mux.Vars(r)["id"]) != true {
+			logger.Log.Errorf("Id is not numeric and positive: %v")
 			respondWithError(w, errorMessage)
 			return
 		}
-		msg, err := e.kafka.KafkaGet(EmployeeDeleteResponse, byteUUID)
+		id := mux.Vars(r)["id"]
+
+		err := e.interServiceEmpl.DeleteEmployee(id)
 		if err != nil {
-			logger.Log.Errorf("Error sending message to env: %v", err)
-			respondWithError(w, errorMessage)
-			return
-		}
-		if string(msg) != "Successful delete" {
-			logger.Log.Errorf("Deleting failed: %v", err)
+			logger.Log.Errorf("Deleting of employee failed: %v", err)
 			respondWithError(w, errorMessage)
 			return
 		} else {
-			logger.Log.Infof("Successful delete")
+			logger.Log.Infof("Successful delete of employee")
 		}
 	}
 }
@@ -166,15 +116,7 @@ func (e *employeeService) UpdateEmployee() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 
 		errorMessage := "Error updating employee"
-		var update struct {
-			Name       string `json:"name"`
-			SecondName string `json:"second_name"`
-			Surname    string `json:"surname"`
-			PhotoUrl   string `json:"photo_url"`
-			HireDate   string `json:"hire_date"`
-			Position   string `json:"position"`
-			CompanyID  int64  `json:"company_id"`
-		}
+		var update presenter.Employee
 
 		err := json.NewDecoder(r.Body).Decode(&update)
 		if err != nil {
@@ -182,30 +124,15 @@ func (e *employeeService) UpdateEmployee() http.HandlerFunc {
 			respondWithError(w, errorMessage)
 			return
 		}
-		empl, err := json.Marshal(update)
+
+		err = e.interServiceEmpl.UpdateEmployee(&update)
+
 		if err != nil {
-			logger.Log.Errorf("Can't prepare company struct for sending to env: %v", err)
+			logger.Log.Errorf("Updating of employee failed: %v", err)
 			respondWithError(w, errorMessage)
-			return
-		}
-		byteUUID, err := e.kafka.KafkaSend(empl, EmployeePUTRequest)
-		if err != nil {
-			logger.Log.Errorf("Error sending message to env: %v", err)
-			respondWithError(w, errorMessage)
-			return
-		}
-		msg, err := e.kafka.KafkaGet(EmployeePUTResponse, byteUUID)
-		if err != nil {
-			logger.Log.Errorf("Error sending message to env: %v", err)
-			respondWithError(w, errorMessage)
-			return
-		}
-		if string(msg) != "Successful update" {
-			respondWithError(w, errorMessage)
-			logger.Log.Errorf("Updating failed: %v", err)
 			return
 		} else {
-			logger.Log.Infof("Successful update")
+			logger.Log.Infof("Successful update of employee")
 		}
 	}
 }
@@ -215,12 +142,19 @@ func (e *employeeService) FormUpdateEmployee() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		errorMessage := "Error updating employee"
+		if IsNumericAndPositive(mux.Vars(r)["companyId"]) != true {
+			logger.Log.Errorf("Id is not numeric and positive: %v")
+			respondWithError(w, errorMessage)
+			return
+		}
+
 		id, err := strconv.Atoi(mux.Vars(r)["id"])
 		if err != nil {
 			logger.Log.Errorf("Can't convert string to int: %v", err)
 			respondWithError(w, errorMessage)
 			return
 		}
+
 		companyID, err := strconv.Atoi(r.Form.Get("company_id"))
 		if err != nil {
 			logger.Log.Errorf("Can't convert string to int: %v", err)
@@ -228,7 +162,7 @@ func (e *employeeService) FormUpdateEmployee() http.HandlerFunc {
 			return
 		}
 
-		update := &presenter.Employee{
+		update := presenter.Employee{
 			ID:         int64(id),
 			Name:       r.Form.Get("name"),
 			SecondName: r.Form.Get("second_name"),
@@ -238,30 +172,15 @@ func (e *employeeService) FormUpdateEmployee() http.HandlerFunc {
 			Position:   r.Form.Get("position"),
 			CompanyID:  int64(companyID),
 		}
-		empl, err := json.Marshal(update)
+
+		err = e.interServiceEmpl.UpdateEmployee(&update)
+
 		if err != nil {
-			logger.Log.Errorf("Can't prepare company struct for sending to env: %v", err)
+			logger.Log.Errorf("Updating of employee failed: %v", err)
 			respondWithError(w, errorMessage)
-			return
-		}
-		byteUUID, err := e.kafka.KafkaSend(empl, EmployeePUTRequest)
-		if err != nil {
-			logger.Log.Errorf("Error sending message to env: %v", err)
-			respondWithError(w, errorMessage)
-			return
-		}
-		msg, err := e.kafka.KafkaGet(EmployeePUTResponse, byteUUID)
-		if err != nil {
-			logger.Log.Errorf("Error sending message to env: %v", err)
-			respondWithError(w, errorMessage)
-			return
-		}
-		if string(msg) != "Successful update" {
-			respondWithError(w, errorMessage)
-			logger.Log.Errorf("Updating failed: %v", err)
 			return
 		} else {
-			logger.Log.Infof("Successful update")
+			logger.Log.Infof("Successful update of employee")
 		}
 	}
 }

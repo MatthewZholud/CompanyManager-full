@@ -2,9 +2,11 @@ package main
 
 import (
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/handlers"
-	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/kafka"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/MessageBroker"
+	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/interService"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/logger"
 	"net/http"
+	"os"
 
 	_ "net/http/pprof"
 
@@ -13,25 +15,22 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const (
-	//todo: mzh: hardcoded port
-	apiGatewayPort   = ":8005"
-)
 
 func main() {
 	logger.InitLog()
-	kafka := kafka.Initialize()
-	company := handlers.InitializeCompany(kafka)
-	employee := handlers.InitializeEmployee(kafka)
+	kafka := MessageBroker.Initialize()
+	interService := interService.Initialize(kafka)
+	company := handlers.InitializeCompany(interService)
+	employee := handlers.InitializeEmployee(interService)
 	r := mux.NewRouter()
 	routes.RegisterEmployeeRoutes(r, employee)
 	routes.RegisterCompanyRoutes(r, company)
 	routes.RegisterProfilingRoutes(r)
 
 	//profiling.RegisterCompanyRoutes(r)
-	err := http.ListenAndServe(apiGatewayPort, r)
+	port := os.Getenv("API_GATEWAY_PORT")
+	err := http.ListenAndServe(port, r)
 	if err != nil {
-		//todo: mzh: very strange log message
-		logger.Log.Fatal("Can't connect to botServer: ", err)
+		logger.Log.Fatalf(`Can't listen to port "%v:": %v `, port, err)
 	}
 }

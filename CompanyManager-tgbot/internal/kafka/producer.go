@@ -26,7 +26,7 @@ func getKafkaWriter(kafkaURL, topic string) *kafka.Writer {
 func (k *kafkaClient) KafkaSend(str []byte, topic string) ([]byte, error) {
 	writer := getKafkaWriter(os.Getenv("KAFKA_BROKERS"), topic)
 	defer writer.Close()
-	logger.Log.Infof("Ready to send message to kafka")
+	logger.Log.Infof("Ready to send message to MessageBroker")
 	currentUUID := uuid.New()
 	byteUUID := []byte(fmt.Sprintf("%s", currentUUID))
 	err := writer.WriteMessages(context.Background(),
@@ -35,10 +35,10 @@ func (k *kafkaClient) KafkaSend(str []byte, topic string) ([]byte, error) {
 			Value: str,
 		})
 	if err != nil {
-		logger.Log.Debugf("Error sending message to kafka, topic: %v", topic)
+		logger.Log.Debugf("Error sending message to MessageBroker, topic: %v", topic)
 		return nil, err
 	} else {
-		logger.Log.Infof("Sent message to kafka, topic: %v", topic)
+		logger.Log.Infof("Sent message to MessageBroker, topic: %v", topic)
 		return byteUUID, nil
 	}
 }

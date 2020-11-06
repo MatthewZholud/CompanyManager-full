@@ -1,4 +1,4 @@
-package kafka
+package MessageBroker
 
 type kafkaClient struct {
 }

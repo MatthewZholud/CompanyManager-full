@@ -1,10 +1,9 @@
-package handlers
+package interService
 
 import (
 	"encoding/json"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/logger"
 	"github.com/MatthewZholud/CompanyManager-full/CompanyManager-api/internal/presenter"
-	"net/http"
 	"strconv"
 )
 
@@ -13,42 +12,40 @@ func JsonToEmployee(msg []byte) (*presenter.Employee, error) {
 	employee := presenter.Employee{}
 	if err := json.Unmarshal(msg, &employee); err != nil {
 		logger.Log.Debug("Can't convert Json to employee struct")
-
 		return nil, err
 	}
 	return &employee, nil
 }
 
-
-
 func JsonToCompany(msg []byte) (*presenter.Company, error) {
 	company := presenter.Company{}
 	if err := json.Unmarshal(msg, &company); err != nil {
 		logger.Log.Debug("Can't convert Json to company struct")
-
 		return nil, err
 	}
 	return &company, nil
 }
 
 
-func IsNumericAndPositive(s string) bool {
-	i, err := strconv.Atoi(s)
-	if err == nil && i >= 0 {
-		return true
-	} else {
-		return false
+func ByteToInt64(msg []byte) (int64, error) {
+	str := string(msg)
+	id, err := strconv.Atoi(str)
+	if err != nil {
+		logger.Log.Debug("Can't convert byte to int64")
+		return 0, err
 	}
+	return int64(id), nil
 }
 
+func JsonToEmployeeArr(msg []byte) ([]presenter.Employee, error) {
+	employee := []presenter.Employee{}
+	if err := json.Unmarshal(msg, &employee); err != nil {
+		logger.Log.Debug("Can't convert Json to array of employee struct")
+		return nil, err
+	}
 
-func respondWithError(w http.ResponseWriter, errorMessage string) {
-	w.WriteHeader(http.StatusInternalServerError)
-	w.Write([]byte(errorMessage))
+	return employee, nil
 }
-
-
-
 
 
 
